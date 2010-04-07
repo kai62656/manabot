@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="All" />
+	<File name="src/animatedsprite.cpp" open="0" top="0" tabpos="9">
+		<Cursor position="1446" topLine="38" />
+	</File>
+	<File name="src/being.cpp" open="1" top="0" tabpos="6">
+		<Cursor position="1992" topLine="63" />
+	</File>
+	<File name="src/being.h" open="0" top="0" tabpos="0">
+		<Cursor position="13272" topLine="50" />
+	</File>
+	<File name="src/beingmanager.cpp" open="1" top="0" tabpos="16">
+		<Cursor position="7913" topLine="294" />
+	</File>
+	<File name="src/beingmanager.h" open="0" top="0" tabpos="7">
+		<Cursor position="2509" topLine="75" />
+	</File>
+	<File name="src/commandhandler.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="1189" topLine="21" />
+	</File>
+	<File name="src/game.cpp" open="1" top="1" tabpos="1">
+		<Cursor position="24890" topLine="841" />
+	</File>
+	<File name="src/game.h" open="1" top="0" tabpos="4">
+		<Cursor position="1420" topLine="30" />
+	</File>
+	<File name="src/gui/chat.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="11876" topLine="469" />
+	</File>
+	<File name="src/gui/chat.h" open="0" top="0" tabpos="0">
+		<Cursor position="3485" topLine="131" />
+	</File>
+	<File name="src/gui/inventorywindow.cpp" open="1" top="0" tabpos="11">
+		<Cursor position="7485" topLine="254" />
+	</File>
+	<File name="src/gui/inventorywindow.h" open="1" top="0" tabpos="15">
+		<Cursor position="2471" topLine="81" />
+	</File>
+	<File name="src/gui/itemamount.cpp" open="1" top="0" tabpos="10">
+		<Cursor position="1473" topLine="31" />
+	</File>
+	<File name="src/gui/popupmenu.cpp" open="1" top="0" tabpos="12">
+		<Cursor position="8602" topLine="271" />
+	</File>
+	<File name="src/gui/trade.cpp" open="1" top="0" tabpos="8">
+		<Cursor position="5544" topLine="184" />
+	</File>
+	<File name="src/keyboardconfig.cpp" open="1" top="0" tabpos="2">
+		<Cursor position="1970" topLine="36" />
+	</File>
+	<File name="src/keyboardconfig.h" open="1" top="0" tabpos="3">
+		<Cursor position="4688" topLine="150" />
+	</File>
+	<File name="src/localplayer.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="16761" topLine="675" />
+	</File>
+	<File name="src/localplayer.h" open="0" top="0" tabpos="8">
+		<Cursor position="4351" topLine="144" />
+	</File>
+	<File name="src/map.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="15439" topLine="479" />
+	</File>
+	<File name="src/map.h" open="0" top="0" tabpos="0">
+		<Cursor position="1496" topLine="72" />
+	</File>
+	<File name="src/monster.h" open="0" top="0" tabpos="8">
+		<Cursor position="1597" topLine="79" />
+	</File>
+	<File name="src/net/adminhandler.h" open="0" top="0" tabpos="8">
+		<Cursor position="1080" topLine="20" />
+	</File>
+	<File name="src/net/ea/adminhandler.cpp" open="0" top="0" tabpos="7">
+		<Cursor position="1464" topLine="61" />
+	</File>
+	<File name="src/net/ea/chathandler.cpp" open="0" top="0" tabpos="7">
+		<Cursor position="2774" topLine="84" />
+	</File>
+	<File name="src/net/ea/generalhandler.cpp" open="1" top="0" tabpos="13">
+		<Cursor position="5514" topLine="180" />
+	</File>
+	<File name="src/net/ea/inventoryhandler.cpp" open="1" top="0" tabpos="9">
+		<Cursor position="124" topLine="0" />
+	</File>
+	<File name="src/net/ea/playerhandler.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="5307" topLine="159" />
+	</File>
+	<File name="src/net/ea/tradehandler.cpp" open="1" top="0" tabpos="7">
+		<Cursor position="1269" topLine="253" />
+	</File>
+	<File name="src/net/messagein.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="729" topLine="168" />
+	</File>
+	<File name="src/net/messageout.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="4021" topLine="169" />
+	</File>
+	<File name="src/net/messageout.h" open="0" top="0" tabpos="0">
+		<Cursor position="616" topLine="33" />
+	</File>
+	<File name="src/net/tmwserv/generalhandler.cpp" open="1" top="0" tabpos="14">
+		<Cursor position="4445" topLine="125" />
+	</File>
+	<File name="src/player.h" open="0" top="0" tabpos="0">
+		<Cursor position="3843" topLine="128" />
+	</File>
+</CodeBlocks_layout_file>
