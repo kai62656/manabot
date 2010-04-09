@@ -40,7 +40,8 @@
 #include "utils/stringutils.h"
 
 CommandHandler::CommandHandler()
-{}
+{
+}
 
 void CommandHandler::handleCommand(const std::string &command, ChatTab *tab)
 {

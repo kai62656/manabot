@@ -32,41 +32,41 @@ extern volatile int tick_time;
 
 class WindowMenu;
 
-class Game : public ConfigListener
+class Game: public ConfigListener
 {
-    public:
-        Game();
+public:
+	Game();
 
-        ~Game();
+	~Game();
 
-        void logic();
+	void logic();
 
-        void handleInput();
+	void handleInput();
 
-        bool handlePickup(int range);
-        void takeRandomStep(int distance);
-        void handleRandMove();
-        void handleBot();
-	void handleFollow2();
-        void HandleBotResponse(std::string message, std::string sender, bool whisper);
+	bool handlePickup(int range);
+	void takeRandomStep(int distance);
+	void handleRandMove();
+	void handleBot();
+	void handleFollow();
+	void HandleBotResponse(std::string message, std::string sender,
+			bool whisper);
 
-        void optionChanged(const std::string &name);
+	void optionChanged(const std::string &name);
 
-    private:
-        /** Used to determine whether to draw the next frame. */
-        int mDrawTime;
+private:
+	/** Used to determine whether to draw the next frame. */
+	int mDrawTime;
 
-        /** The minimum frame time (used for frame limiting). */
-        int mMinFrameTime;
+	/** The minimum frame time (used for frame limiting). */
+	int mMinFrameTime;
 
-        int mLastTarget;
+	int mLastTarget;
 
-        SDL_TimerID mLogicCounterId;
-        SDL_TimerID mSecondsCounterId;
+	SDL_TimerID mLogicCounterId;
+	SDL_TimerID mSecondsCounterId;
 
-        WindowMenu *mWindowMenu;
+	WindowMenu *mWindowMenu;
 };
-
 /**
  * Returns elapsed time. (Warning: supposes the delay is always < 100 seconds)
  */

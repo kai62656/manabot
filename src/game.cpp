@@ -19,6 +19,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "extra/follow.h"
+
 #include "beingmanager.h"
 #include "channelmanager.h"
 #include "commandhandler.h"
@@ -164,6 +166,9 @@ std::string targetType = "";
 std::string botMaster = "Haunted";
 std::string botFriend = "";
 int targetTimer = 0;
+
+// handleFollow()
+bool wasKilled = false;
 
 bool botListen = false;
 
@@ -582,7 +587,7 @@ void Game::logic()
 			if (isBotOn)
 				handleBot();
 			else if (bFollowPlayer)
-				handleFollow2();
+				handleFollow();
 
 			if (manaLeach)
 				handleLeach();
@@ -842,63 +847,36 @@ void Game::handleRandMove()
 
 void Game::handleBot()
 {
-	if (map_path != mapName)
+	if (map_path != mapName || player_node->mAction == Being::DEAD)
 	{
-		//WrongMapActing();
 		isBotOn = false;
-		//		player_node->setDestination(player_node->mX, player_node->mY+1);
 		return;
 	}
 
 	if (!player_node->getTarget())
 	{
-		stayTimer++;
-		//				if(stayTimer > 6000){
-		//					stayTimer = 0;
-		//				}
-		if (stayTimer > 100)
+		if (player_node->mAction == Being::WALK)
+			return;
+		if (stayTimer++ > 100)
 		{
 			if (player_node->mAction != Being::SIT)
 				player_node->toggleSit(false);
-			//				}else{
-			//		  		takeRandomStep(2);
 			stayTimer = 0;
 		}
-
-		//        targetTimer++;
-		//        if(handlePickup(18)){
-		//            return;
-		//		}
-		//        if(targetTimer > 10){
-		//            if (player_node->mAction != Being::ATTACK){
-		//              player_node->setTarget(beingManager->findIsolatedBeing(player_node, 18, Being::MONSTER, targetType));
-		//		player_node->setAction(Being::STAND);
-		if (stayTimer % 20 == 0)
-			player_node->getTarget()->untarget();
-		if (bAutoPickup && handlePickup(1))
-			return;
-
 		player_node->setTarget(beingManager->findNearestLivingBeingNotName(
 				player_node, 20, Being::MONSTER,
 				player_node->noskulls ? "Skull" : ""));
+		//        player_node->setTarget(beingManager->findIsolatedBeing(player_node, 18, Being::MONSTER, targetType));
 		attackTimer = 0;
 		sysTimer = 0;
-		stayTimer = 0;
 		if (player_node->square && !player_node->getTarget())
 		{
 			player_node->setDestination(player_node->homex, player_node->homey);
 		}
-		//		}
-		//		return;
-		//           targetTimer = 0;
-		//        }
 	}
 	else
 	{
 		sysTimer++;
-		//		if(sysTimer % 50 == 0){
-		//			takeRandomStep(1);
-		//		}
 		if (sysTimer > 1000)
 		{
 			sysTimer = 0;
@@ -911,7 +889,6 @@ void Game::handleBot()
 			if (player_node->withinAttackRange(player_node->getTarget()))
 			{
 				player_node->setDestination(player_node->mX, player_node->mY);
-				//			  player_node->setAction(Being::STAND);
 				player_node->attack(player_node->getTarget(), true);
 				if (sysTimer % 50 != 0)
 				{
@@ -927,7 +904,6 @@ void Game::handleBot()
 			}
 			if (attackDistBool && player_node->mAction != Being::WALK)
 			{
-				//            	player_node->setGotoTarget(player_node->getTarget());
 				player_node->setDestination(player_node->getTarget()->mX,
 						player_node->getTarget()->mY);
 			}
@@ -989,18 +965,23 @@ bool Game::handlePickup(int range)
 	return false;
 }
 
-void Game::handleFollow2()
+void Game::handleFollow()
 {
 	Being *target = beingManager->findBeingByName(targetName);
 	if (target)
 	{
+		wasKilled = false;
+		tilesPassed = 0;
 		if (player_node->mX != target->mX || player_node->mY != target->mY)
 			player_node->setDestination(target->mX, target->mY);
 		if (target->mAction != Being::ATTACK)
 		{
+			if (target->mAction == Being::DEAD)
+				wasKilled = true;
 			if (player_node->getTarget())
 				player_node->getTarget()->untarget();
-			if (player_node->mAction == Being::SIT)
+			if (target->mAction == Being::SIT && player_node->mAction
+					!= Being::SIT)
 				player_node->toggleSit(false);
 		}
 		if (target->mAction == Being::ATTACK && player_node->mAction
@@ -1019,8 +1000,8 @@ void Game::handleFollow2()
 	}
 	else
 	{
-		target = beingManager->findBeingByName(targetName);
-		if (!target && tilesPassed < 300)
+		if (!wasKilled && tilesPassed < 10 && player_node->mAction
+				== Being::STAND)
 		{
 			switch (player_node->getSpriteDirection())
 			{
@@ -1038,10 +1019,6 @@ void Game::handleFollow2()
 				break;
 			}
 			tilesPassed++;
-		}
-		else
-		{
-			tilesPassed = 0;
 		}
 	}
 }
