@@ -45,11 +45,9 @@ class Game : public ConfigListener
 
         bool handlePickup(int range);
         void takeRandomStep(int distance);
-        void handleGm();
+        void handleRandMove();
         void handleBot();
-        void handleFollow();
-		void handleFollow2();
-        void handleSitWalk();
+	void handleFollow2();
         void HandleBotResponse(std::string message, std::string sender, bool whisper);
 
         void optionChanged(const std::string &name);
