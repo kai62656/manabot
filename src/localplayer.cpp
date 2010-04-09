@@ -75,7 +75,7 @@ const short walkingKeyboardDelay = 100;
 #endif
 
 bool specialSit = false;
-int actionDelay = 1000;
+int actionDelay = 50;
 int targetDelay = 60000;
 
 LocalPlayer *player_node = NULL;
