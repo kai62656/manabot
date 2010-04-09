@@ -178,7 +178,6 @@ Being *targetPlayer;
 bool lostTarget = false;
 int tilesPassed = 0;
 std::string targetName = "";
-
 int idleTimer = 0;
 int walkTimer = 0;
 int stayTimer = 0;
@@ -559,7 +558,8 @@ void Game::logic()
 			handleInput();
 
 			pickupTimer++;
-			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer % 20 == 0))
+			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer % 20
+					== 0))
 			{
 				handlePickup(1);
 				pickupTimer = 0;
@@ -584,14 +584,14 @@ void Game::logic()
 			else if (bFollowPlayer)
 				handleFollow2();
 
-		        if(manaLeach)
-		                handleLeach();
+			if (manaLeach)
+				handleLeach();
 
-           		if(spellTrain)
-               		        handleSpell();
+			if (spellTrain)
+				handleSpell();
 
-	                if(randMove)
-                                handleRandMove();
+			if (randMove)
+				handleRandMove();
 
 			engine->logic();
 			gameTime++;
@@ -831,12 +831,12 @@ void RandTauntsTalk()
 
 void Game::handleRandMove()
 {
-    randMoveTimer++;
-    if(randMoveTimer >= 5)
-    {
-        randMoveTimer = 0;
-        takeRandomStep(2);
-    }
+	randMoveTimer++;
+	if (randMoveTimer >= 5)
+	{
+		randMoveTimer = 0;
+		takeRandomStep(2);
+	}
 
 }
 
@@ -996,12 +996,13 @@ void Game::handleFollow2()
 	{
 		if (player_node->mX != target->mX || player_node->mY != target->mY)
 			player_node->setDestination(target->mX, target->mY);
-		//		if (player_node->getSpriteDirection() != target->getSpriteDirection()){
-		//			Net::getPlayerHandler()->setDirection(target->getSpriteDirection());
-		//			player_node->setDirection(target->getSpriteDirection());
-		//		}
-		if (target->mAction != Being::ATTACK && player_node->getTarget())
-			player_node->getTarget()->untarget();
+		if (target->mAction != Being::ATTACK)
+		{
+			if (player_node->getTarget())
+				player_node->getTarget()->untarget();
+			if (player_node->mAction == Being::SIT)
+				player_node->toggleSit(false);
+		}
 		if (target->mAction == Being::ATTACK && player_node->mAction
 				!= Being::ATTACK)
 		{
@@ -1013,82 +1014,550 @@ void Game::handleFollow2()
 			Being *attackTarget = beingManager->findNearestLivingBeing(target,
 					player_node->getAttackRange() + 3, Being::MONSTER);
 			if (attackTarget)
-			{
-				//				if (player_node->mAction == Being::SIT)
-				//					player_node->toggleSit(false);
-				//				if (!player_node->withinAttackRange(attackTarget))
-				//					player_node->setDestination(target->mX, target->mY);
 				player_node->attack(attackTarget, true);
-			}
 		}
 	}
 	else
 	{
-		if (tilesPassed > 6000)
+		target = beingManager->findBeingByName(targetName);
+		if (!target && tilesPassed < 300)
 		{
-			tilesPassed = 0;
-			lostTarget = false;
-			bFollowPlayer = false;
+			switch (player_node->getSpriteDirection())
+			{
+			case DIRECTION_UP:
+				player_node->setWalkingDir(Being::UP);
+				break;
+			case DIRECTION_DOWN:
+				player_node->setWalkingDir(Being::DOWN);
+				break;
+			case DIRECTION_LEFT:
+				player_node->setWalkingDir(Being::LEFT);
+				break;
+			case DIRECTION_RIGHT:
+				player_node->setWalkingDir(Being::RIGHT);
+				break;
+			}
+			tilesPassed++;
 		}
 		else
 		{
-			target = beingManager->findBeingByName(targetName);
-			if (!target && tilesPassed % 10 == 0)
+			tilesPassed = 0;
+		}
+	}
+
+	void Game::handleInput()
+	{
+		if (joystick)
+			joystick->update();
+
+		// Events
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
+		{
+			bool used = false;
+
+			// Keyboard events (for discontinuous keys)
+			if (event.type == SDL_KEYDOWN)
 			{
-				switch (player_node->getSpriteDirection())
+				gcn::Window *requestedWindow = NULL;
+
+				if (setupWindow->isVisible() && keyboard.getNewKeyIndex()
+						> keyboard.KEY_NO_VALUE)
 				{
-				case DIRECTION_UP:
-					player_node->setWalkingDir(Being::UP);
+					keyboard.setNewKey((int) event.key.keysym.sym);
+					keyboard.callbackNewKey();
+					keyboard.setNewKeyIndex(keyboard.KEY_NO_VALUE);
+					return;
+				}
+
+				// send straight to gui for certain windows
+				if (npcPostDialog->isVisible())
+				{
+					try
+					{
+						guiInput->pushInput(event);
+					} catch (gcn::Exception e)
+					{
+						const char* err = e.getMessage().c_str();
+						logger->log("Warning: guichan input exception: %s", err);
+					}
+					return;
+				}
+
+				// Mode switch to emotes
+				if (keyboard.isKeyActive(keyboard.KEY_EMOTE))
+				{
+					// Emotions
+					int emotion = keyboard.getKeyEmoteOffset(
+							event.key.keysym.sym);
+					if (emotion)
+					{
+						emoteShortcut->useEmote(emotion);
+						used = true;
+						return;
+					}
+				}
+
+				if (!chatWindow->isInputFocused()
+						&& !gui->getFocusHandler()->getModalFocused())
+				{
+					if (keyboard.isKeyActive(keyboard.KEY_OK))
+					{
+#ifdef TMWSERV_SUPPORT
+						// Do not focus chat input when quit dialog is active
+						if (quitDialog != NULL && quitDialog->isVisible())
+						continue;
+#else
+						if (exitConfirm && keyboard.isKeyActive(
+								keyboard.KEY_TOGGLE_CHAT))
+							done = true;
+#endif
+						// Close the Browser if opened
+						else if (helpWindow->isVisible()
+								&& keyboard.isKeyActive(keyboard.KEY_OK))
+							helpWindow->setVisible(false);
+						// Close the config window, cancelling changes if opened
+						else if (setupWindow->isVisible()
+								&& keyboard.isKeyActive(keyboard.KEY_OK))
+							setupWindow->action(
+									gcn::ActionEvent(NULL, "cancel"));
+						else if (npcDialog->isVisible()
+								&& keyboard.isKeyActive(keyboard.KEY_OK))
+							npcDialog->action(gcn::ActionEvent(NULL, "ok"));
+						/*
+						 else if (guildWindow->isVisible())
+						 {
+						 // TODO: Check if a dialog is open and close it if so
+						 }
+						 */
+					}
+					if (keyboard.isKeyActive(keyboard.KEY_TOGGLE_CHAT))
+					{
+						if (chatWindow->requestChatFocus())
+							used = true;
+					}
+					if (npcDialog->isVisible())
+					{
+						if (keyboard.isKeyActive(keyboard.KEY_MOVE_UP))
+							npcDialog->move(1);
+						else if (keyboard.isKeyActive(keyboard.KEY_MOVE_DOWN))
+							npcDialog->move(-1);
+					}
+				}
+
+				if (!chatWindow->isInputFocused() || (event.key.keysym.mod
+						& KMOD_ALT))
+				{
+					if (keyboard.isKeyActive(keyboard.KEY_PREV_CHAT_TAB))
+					{
+						chatWindow->prevTab();
+						return;
+					}
+					else if (keyboard.isKeyActive(keyboard.KEY_NEXT_CHAT_TAB))
+					{
+						chatWindow->nextTab();
+						return;
+					}
+				}
+
+				const int tKey = keyboard.getKeyIndex(event.key.keysym.sym);
+				switch (tKey)
+				{
+				case KeyboardConfig::KEY_SCROLL_CHAT_UP:
+					if (chatWindow->isVisible())
+					{
+						chatWindow->scroll(-DEFAULT_CHAT_WINDOW_SCROLL);
+						used = true;
+					}
 					break;
-				case DIRECTION_DOWN:
-					player_node->setWalkingDir(Being::DOWN);
+				case KeyboardConfig::KEY_SCROLL_CHAT_DOWN:
+					if (chatWindow->isVisible())
+					{
+						chatWindow->scroll(DEFAULT_CHAT_WINDOW_SCROLL);
+						used = true;
+						return;
+					}
 					break;
-				case DIRECTION_LEFT:
-					player_node->setWalkingDir(Being::LEFT);
+				case KeyboardConfig::KEY_WINDOW_HELP:
+					// In-game Help
+					if (helpWindow->isVisible())
+						helpWindow->setVisible(false);
+					else
+					{
+						helpWindow->loadHelp("index");
+						helpWindow->requestMoveToTop();
+					}
+					used = true;
 					break;
-				case DIRECTION_RIGHT:
-					player_node->setWalkingDir(Being::RIGHT);
+					// Quitting confirmation dialog
+				case KeyboardConfig::KEY_QUIT:
+#ifdef TMWSERV_SUPPORT
+					if (!quitDialog)
+					{
+						quitDialog = new QuitDialog(&done, &quitDialog);
+						quitDialog->requestMoveToTop();
+					}
+					else
+					{
+						quitDialog->action(gcn::ActionEvent(NULL, "cancel"));
+					}
+#else
+					if (!exitConfirm)
+					{
+						exitConfirm = new ConfirmDialog(_("Quit"),
+								_("Are you sure you "
+										"want to quit?"));
+						exitConfirm->addActionListener(&exitListener);
+						exitConfirm->requestMoveToTop();
+					}
+					else
+					{
+						exitConfirm->action(gcn::ActionEvent(NULL, _("no")));
+					}
+#endif
 					break;
 				default:
 					break;
 				}
-				tilesPassed++;
+				if (keyboard.isEnabled() && !chatWindow->isInputFocused()
+						&& !npcDialog->isInputFocused())
+				{
+					const int tKey = keyboard.getKeyIndex(event.key.keysym.sym);
+
+					// Do not activate shortcuts if tradewindow is visible
+					if (!tradeWindow->isVisible())
+					{
+						// Checks if any item shortcut is pressed.
+						for (int i = KeyboardConfig::KEY_SHORTCUT_1; i
+								<= KeyboardConfig::KEY_SHORTCUT_12; i++)
+						{
+							if (tKey == i && !used)
+							{
+								itemShortcut->useItem(i
+										- KeyboardConfig::KEY_SHORTCUT_1);
+								break;
+							}
+						}
+					}
+
+					switch (tKey)
+					{
+					case KeyboardConfig::KEY_PICKUP:
+					{
+#ifdef TMWSERV_SUPPORT
+						const Vector &pos = player_node->getPosition();
+						Uint16 x = (int) pos.x / 32;
+						Uint16 y = (int) pos.y / 32;
+#else
+						Uint16 x = player_node->mX;
+						Uint16 y = player_node->mY;
+#endif
+						FloorItem *item = floorItemManager->findByCoordinates(
+								x, y);
+
+						// If none below the player, try the tile in front
+						// of the player
+						if (!item)
+						{
+							// Temporary until tile-based picking is
+							// removed.
+							switch (player_node->getSpriteDirection())
+							{
+							case DIRECTION_UP:
+								--y;
+								break;
+							case DIRECTION_DOWN:
+								++y;
+								break;
+							case DIRECTION_LEFT:
+								--x;
+								break;
+							case DIRECTION_RIGHT:
+								++x;
+								break;
+							default:
+								break;
+							}
+
+							item = floorItemManager->findByCoordinates(x, y);
+						}
+
+						if (item)
+							player_node->pickUp(item);
+
+						used = true;
+					}
+						break;
+					case KeyboardConfig::KEY_BOT:
+						if (!isBotOn)
+						{
+							if (player_node->getTarget())
+							{
+								isBotOn = true;
+								isBotStandby = false;
+								targetType
+										= player_node->getTarget()->getName();
+								player_node->setTargetDelay(6000);
+								mapName = map_path;
+								localChatTab->chatLog(_("Bot turned on."),
+										BY_SERVER);
+							}
+							else
+								localChatTab->chatLog(
+										_("Bot cannot turn on. No Target."),
+										BY_SERVER);
+						}
+						else
+						{
+							isBotOn = false;
+							isBotStandby = false;
+							targetType = "";
+							mapName = "";
+							wrongActStarted = false;
+							wrongMapTimer = 0;
+							player_node->setTargetDelay(60000);
+							localChatTab->chatLog(_("Bot turned off."),
+									BY_SERVER);
+						}
+
+						used = true;
+						break;
+					case KeyboardConfig::KEY_HEAL:
+						if (player_node->getTarget())
+							localChatTab->chatInput("#inma "
+									+ player_node->getTarget()->getName());
+						else
+							localChatTab->chatInput("#lum");
+						break;
+					case KeyboardConfig::KEY_ARROW:
+						localChatTab->chatInput("#frillyar");
+						RandTauntsTalk();
+						break;
+					case KeyboardConfig::KEY_LIGHTNING:
+						localChatTab->chatInput("#ingrav");
+						RandTauntsTalk();
+						break;
+					case KeyboardConfig::KEY_GREET:
+						RandGreetTalk();
+						break;
+					case KeyboardConfig::KEY_BYE:
+						RandByeTalk();
+						break;
+					case KeyboardConfig::KEY_TAUNTS:
+						RandTauntsTalk();
+						break;
+					case KeyboardConfig::KEY_THANKS:
+						RandThanksTalk();
+						break;
+					case KeyboardConfig::KEY_MK:
+						RandMkTalk();
+						break;
+					case KeyboardConfig::KEY_RANDMOVE:
+						randMove = !randMove;
+						if (randMove)
+						{
+							randMoveTimer = 0;
+							localChatTab->chatLog(_("Random movement enabled"),
+									BY_SERVER);
+						}
+						else
+						{
+							randMoveTimer = 0;
+							localChatTab->chatLog(
+									_("Random movement disabled"),
+									BY_SERVER);
+						}
+						break;
+					case KeyboardConfig::KEY_SPAMEMOTE:
+						manaLeach = !manaLeach;
+						if (manaLeach)
+						{
+							leachTimer = 0;
+							localChatTab->chatLog(_("Emote spam enabled"),
+									BY_SERVER);
+						}
+						else
+						{
+							leachTimer = 0;
+							localChatTab->chatLog(_("Emote spam disabled"),
+									BY_SERVER);
+						}
+						break;
+					case KeyboardConfig::KEY_LIFESTONES:
+						spellTrain = !spellTrain;
+						if (spellTrain)
+						{
+							spellTimer = 0;
+							localChatTab->chatLog(
+									_("Auto life stone creation enabled"),
+									BY_SERVER);
+						}
+						else
+						{
+							spellTimer = 0;
+							localChatTab->chatLog(
+									_("Auto life stone creation disabled"),
+									BY_SERVER);
+						}
+						break;
+					case KeyboardConfig::KEY_AGGRO:
+						localChatTab->chatInput("#itenplz");
+						break;
+					case KeyboardConfig::KEY_AUTOPICKUP:
+						bAutoPickup = !bAutoPickup;
+
+						if (bAutoPickup)
+						{
+							localChatTab->chatLog(_("Auto Pickup turned on."),
+									BY_SERVER);
+							Net::getAdminHandler()->announce("?");
+						}
+						else
+						{
+							localChatTab->chatLog(_("Auto Pickup turned off."),
+									BY_SERVER);
+							Net::getAdminHandler()->localAnnounce("?");
+						}
+
+						break;
+					case KeyboardConfig::KEY_FOLLOW:
+						if (!bFollowPlayer)
+						{
+							if (player_node->getTarget())
+							{
+								bFollowPlayer = true;
+								targetName
+										= player_node->getTarget()->getName();
+								localChatTab->chatLog(
+										_("Follow player turned on."),
+										BY_SERVER);
+							}
+							else
+								localChatTab->chatLog(
+										_("Follow player failed. No Target."),
+										BY_SERVER);
+						}
+						else
+						{
+							bFollowPlayer = false;
+							localChatTab->chatLog(
+									_("Follow player turned off."),
+									BY_SERVER);
+							targetName = "";
+						}
+
+						break;
+					case KeyboardConfig::KEY_SIT:
+						// Player sit action
+						player_node->toggleSit(false);
+						used = true;
+						break;
+					case KeyboardConfig::KEY_SIT2:
+						// Player sit action
+						player_node->toggleSit(true);
+						used = true;
+						break;
+					case KeyboardConfig::KEY_HIDE_WINDOWS:
+						// Hide certain windows
+						if (!chatWindow->isInputFocused())
+						{
+							statusWindow->setVisible(false);
+							inventoryWindow->setVisible(false);
+							skillDialog->setVisible(false);
+							setupWindow->setVisible(false);
+							equipmentWindow->setVisible(false);
+							helpWindow->setVisible(false);
+							debugWindow->setVisible(false);
+#ifdef TMWSERV_SUPPORT
+							guildWindow->setVisible(false);
+							buddyWindow->setVisible(false);
+#endif
+						}
+						break;
+					case KeyboardConfig::KEY_WINDOW_STATUS:
+						requestedWindow = statusWindow;
+						break;
+					case KeyboardConfig::KEY_WINDOW_INVENTORY:
+						requestedWindow = inventoryWindow;
+						break;
+					case KeyboardConfig::KEY_WINDOW_EQUIPMENT:
+						requestedWindow = equipmentWindow;
+						break;
+					case KeyboardConfig::KEY_WINDOW_SKILL:
+						requestedWindow = skillDialog;
+						break;
+					case KeyboardConfig::KEY_WINDOW_MINIMAP:
+						minimap->toggle();
+						break;
+					case KeyboardConfig::KEY_WINDOW_CHAT:
+						requestedWindow = chatWindow;
+						break;
+					case KeyboardConfig::KEY_WINDOW_SHORTCUT:
+						requestedWindow = itemShortcutWindow;
+						break;
+					case KeyboardConfig::KEY_WINDOW_SETUP:
+						requestedWindow = setupWindow;
+						break;
+					case KeyboardConfig::KEY_WINDOW_DEBUG:
+						requestedWindow = debugWindow;
+						break;
+					case KeyboardConfig::KEY_WINDOW_PARTY:
+						requestedWindow = partyWindow;
+						break;
+					case KeyboardConfig::KEY_WINDOW_EMOTE_SHORTCUT:
+						requestedWindow = emoteShortcutWindow;
+						break;
+					case KeyboardConfig::KEY_SCREENSHOT:
+						// Screenshot (picture, hence the p)
+						saveScreenshot();
+						used = true;
+						break;
+					case KeyboardConfig::KEY_PATHFIND:
+						// Find path to mouse (debug purpose)
+						viewport->toggleDebugPath();
+						used = true;
+						break;
+					case KeyboardConfig::KEY_TRADE:
+						// Toggle accepting of incoming trade requests
+						unsigned int deflt = player_relations.getDefault();
+						if (deflt & PlayerRelation::TRADE)
+						{
+							localChatTab->chatLog(
+									_("Ignoring incoming trade requests"),
+									BY_SERVER);
+							deflt &= ~PlayerRelation::TRADE;
+						}
+						else
+						{
+							localChatTab->chatLog(
+									_("Accepting incoming trade requests"),
+									BY_SERVER);
+							deflt |= PlayerRelation::TRADE;
+						}
+
+						player_relations.setDefault(deflt);
+
+						used = true;
+						break;
+					}
+				}
+
+				if (requestedWindow)
+				{
+					requestedWindow->setVisible(!requestedWindow->isVisible());
+					if (requestedWindow->isVisible())
+						requestedWindow->requestMoveToTop();
+					used = true;
+				}
 			}
-			else
+			// Quit event
+			else if (event.type == SDL_QUIT)
 			{
-				tilesPassed = 0;
-			}
-		}
-	}
-}
-
-void Game::handleInput()
-{
-	if (joystick)
-		joystick->update();
-
-	// Events
-	SDL_Event event;
-	while (SDL_PollEvent(&event))
-	{
-		bool used = false;
-
-		// Keyboard events (for discontinuous keys)
-		if (event.type == SDL_KEYDOWN)
-		{
-			gcn::Window *requestedWindow = NULL;
-
-			if (setupWindow->isVisible() && keyboard.getNewKeyIndex()
-					> keyboard.KEY_NO_VALUE)
-			{
-				keyboard.setNewKey((int) event.key.keysym.sym);
-				keyboard.callbackNewKey();
-				keyboard.setNewKeyIndex(keyboard.KEY_NO_VALUE);
-				return;
+				done = true;
 			}
 
-			// send straight to gui for certain windows
-			if (npcPostDialog->isVisible())
+			// Push input to GUI when not used
+			if (!used)
 			{
 				try
 				{
@@ -1098,654 +1567,178 @@ void Game::handleInput()
 					const char* err = e.getMessage().c_str();
 					logger->log("Warning: guichan input exception: %s", err);
 				}
+			}
+
+		} // End while
+
+		// If the user is configuring the keys then don't respond.
+		if (!keyboard.isEnabled())
+			return;
+
+		// Moving player around
+		if (player_node->mAction != Being::DEAD && current_npc == 0
+				&& !chatWindow->isInputFocused())
+		{
+			// Get the state of the keyboard keys
+			keyboard.refreshActiveKeys();
+
+			// Ignore input if either "ignore" key is pressed
+			// Stops the character moving about if the user's window manager
+			// uses "ignore+arrow key" to switch virtual desktops.
+			if (keyboard.isKeyActive(keyboard.KEY_IGNORE_INPUT_1)
+					|| keyboard.isKeyActive(keyboard.KEY_IGNORE_INPUT_2))
+			{
 				return;
 			}
 
-			// Mode switch to emotes
-			if (keyboard.isKeyActive(keyboard.KEY_EMOTE))
-			{
-				// Emotions
-				int emotion = keyboard.getKeyEmoteOffset(event.key.keysym.sym);
-				if (emotion)
-				{
-					emoteShortcut->useEmote(emotion);
-					used = true;
-					return;
-				}
-			}
-
-			if (!chatWindow->isInputFocused()
-					&& !gui->getFocusHandler()->getModalFocused())
-			{
-				if (keyboard.isKeyActive(keyboard.KEY_OK))
-				{
 #ifdef TMWSERV_SUPPORT
-					// Do not focus chat input when quit dialog is active
-					if (quitDialog != NULL && quitDialog->isVisible())
-					continue;
+			const Vector &pos = player_node->getPosition();
+			const Uint16 x = (int) pos.x / 32;
+			const Uint16 y = (int) pos.y / 32;
 #else
-					if (exitConfirm && keyboard.isKeyActive(
-							keyboard.KEY_TOGGLE_CHAT))
-						done = true;
+			const Uint16 x = player_node->mX;
+			const Uint16 y = player_node->mY;
 #endif
-					// Close the Browser if opened
-					else if (helpWindow->isVisible() && keyboard.isKeyActive(
-							keyboard.KEY_OK))
-						helpWindow->setVisible(false);
-					// Close the config window, cancelling changes if opened
-					else if (setupWindow->isVisible() && keyboard.isKeyActive(
-							keyboard.KEY_OK))
-						setupWindow->action(gcn::ActionEvent(NULL, "cancel"));
-					else if (npcDialog->isVisible() && keyboard.isKeyActive(
-							keyboard.KEY_OK))
-						npcDialog->action(gcn::ActionEvent(NULL, "ok"));
-					/*
-					 else if (guildWindow->isVisible())
-					 {
-					 // TODO: Check if a dialog is open and close it if so
-					 }
-					 */
-				}
-				if (keyboard.isKeyActive(keyboard.KEY_TOGGLE_CHAT))
-				{
-					if (chatWindow->requestChatFocus())
-						used = true;
-				}
-				if (npcDialog->isVisible())
-				{
-					if (keyboard.isKeyActive(keyboard.KEY_MOVE_UP))
-						npcDialog->move(1);
-					else if (keyboard.isKeyActive(keyboard.KEY_MOVE_DOWN))
-						npcDialog->move(-1);
-				}
+			unsigned char direction = 0;
+
+			// Translate pressed keys to movement and direction
+			if (keyboard.isKeyActive(keyboard.KEY_MOVE_UP) || (joystick
+					&& joystick->isUp()))
+			{
+				direction |= Being::UP;
+			}
+			else if (keyboard.isKeyActive(keyboard.KEY_MOVE_DOWN) || (joystick
+					&& joystick->isDown()))
+			{
+				direction |= Being::DOWN;
 			}
 
-			if (!chatWindow->isInputFocused() || (event.key.keysym.mod
-					& KMOD_ALT))
+			if (keyboard.isKeyActive(keyboard.KEY_MOVE_LEFT) || (joystick
+					&& joystick->isLeft()))
 			{
-				if (keyboard.isKeyActive(keyboard.KEY_PREV_CHAT_TAB))
-				{
-					chatWindow->prevTab();
-					return;
-				}
-				else if (keyboard.isKeyActive(keyboard.KEY_NEXT_CHAT_TAB))
-				{
-					chatWindow->nextTab();
-					return;
-				}
+				direction |= Being::LEFT;
+			}
+			else if (keyboard.isKeyActive(keyboard.KEY_MOVE_RIGHT) || (joystick
+					&& joystick->isRight()))
+			{
+				direction |= Being::RIGHT;
 			}
 
-			const int tKey = keyboard.getKeyIndex(event.key.keysym.sym);
-			switch (tKey)
-			{
-			case KeyboardConfig::KEY_SCROLL_CHAT_UP:
-				if (chatWindow->isVisible())
-				{
-					chatWindow->scroll(-DEFAULT_CHAT_WINDOW_SCROLL);
-					used = true;
-				}
-				break;
-			case KeyboardConfig::KEY_SCROLL_CHAT_DOWN:
-				if (chatWindow->isVisible())
-				{
-					chatWindow->scroll(DEFAULT_CHAT_WINDOW_SCROLL);
-					used = true;
-					return;
-				}
-				break;
-			case KeyboardConfig::KEY_WINDOW_HELP:
-				// In-game Help
-				if (helpWindow->isVisible())
-					helpWindow->setVisible(false);
-				else
-				{
-					helpWindow->loadHelp("index");
-					helpWindow->requestMoveToTop();
-				}
-				used = true;
-				break;
-				// Quitting confirmation dialog
-			case KeyboardConfig::KEY_QUIT:
 #ifdef TMWSERV_SUPPORT
-				if (!quitDialog)
-				{
-					quitDialog = new QuitDialog(&done, &quitDialog);
-					quitDialog->requestMoveToTop();
-				}
-				else
-				{
-					quitDialog->action(gcn::ActionEvent(NULL, "cancel"));
-				}
-#else
-				if (!exitConfirm)
-				{
-					exitConfirm = new ConfirmDialog(_("Quit"),
-							_("Are you sure you "
-									"want to quit?"));
-					exitConfirm->addActionListener(&exitListener);
-					exitConfirm->requestMoveToTop();
-				}
-				else
-				{
-					exitConfirm->action(gcn::ActionEvent(NULL, _("no")));
-				}
-#endif
-				break;
-			default:
-				break;
-			}
-			if (keyboard.isEnabled() && !chatWindow->isInputFocused()
-					&& !npcDialog->isInputFocused())
+			// First if player is pressing key for the direction he is already
+			// going
+			if (direction == player_node->getWalkingDir())
 			{
-				const int tKey = keyboard.getKeyIndex(event.key.keysym.sym);
+				player_node->setWalkingDir(direction);
+			}
+			// Else if he is pressing a key, and its different from what he has
+			// been pressing, stop (do not send this stop to the server) and
+			// start in the new direction
 
-				// Do not activate shortcuts if tradewindow is visible
-				if (!tradeWindow->isVisible())
+			else if (direction && direction != player_node->getWalkingDir())
+			{
+				player_node->stopWalking(false);
+				player_node->setWalkingDir(direction);
+			}
+			// Else, he is not pressing a key, stop (sending to server)
+
+			else
+			{
+				player_node->stopWalking(true);
+			}
+#else
+			player_node->setWalkingDir(direction);
+
+			// Attacking monsters
+			if (keyboard.isKeyActive(keyboard.KEY_ATTACK) || (joystick
+					&& joystick->buttonPressed(0)))
+			{
+				if (player_node->getTarget())
+					player_node->attack(player_node->getTarget(), true);
+			}
+
+			if (keyboard.isKeyActive(keyboard.KEY_TARGET_ATTACK))
+			{
+				Being *target = NULL;
+
+				bool newTarget = !keyboard.isKeyActive(keyboard.KEY_TARGET);
+				// A set target has highest priority
+				if (!player_node->getTarget())
 				{
-					// Checks if any item shortcut is pressed.
-					for (int i = KeyboardConfig::KEY_SHORTCUT_1; i
-							<= KeyboardConfig::KEY_SHORTCUT_12; i++)
+					Uint16 targetX = x, targetY = y;
+					// Only auto target Monsters
+					target = beingManager->findNearestLivingBeing(targetX,
+							targetY, 20, Being::MONSTER);
+				}
+				player_node->attack(target, newTarget);
+			}
+
+#endif
+
+			// Target the nearest player/monster/npc
+			if ((keyboard.isKeyActive(keyboard.KEY_TARGET_PLAYER)
+					|| keyboard.isKeyActive(keyboard.KEY_TARGET_CLOSEST)
+					|| keyboard.isKeyActive(keyboard.KEY_TARGET_NPC)
+					|| (joystick && joystick->buttonPressed(3)))
+					&& !keyboard.isKeyActive(keyboard.KEY_TARGET))
+			{
+				Being::Type currentTarget = Being::UNKNOWN;
+				if (keyboard.isKeyActive(keyboard.KEY_TARGET_CLOSEST)
+						|| (joystick && joystick->buttonPressed(3)))
+					currentTarget = Being::MONSTER;
+				else if (keyboard.isKeyActive(keyboard.KEY_TARGET_PLAYER))
+					currentTarget = Being::PLAYER;
+				else if (keyboard.isKeyActive(keyboard.KEY_TARGET_NPC))
+					currentTarget = Being::NPC;
+
+				Being *target = beingManager->findNearestLivingBeing(
+						player_node, 20, currentTarget);
+
+				if (target && (target != player_node->getTarget()
+						|| currentTarget != mLastTarget))
+				{
+					player_node->setTarget(target);
+					mLastTarget = currentTarget;
+				}
+			}
+			else
+				mLastTarget = Being::UNKNOWN; // Reset last target
+
+			// Talk to the nearest NPC if 't' pressed
+			if (keyboard.isKeyActive(keyboard.KEY_TALK))
+			{
+				if (!npcDialog->isVisible())
+				{
+					Being *target = player_node->getTarget();
+
+					if (target)
 					{
-						if (tKey == i && !used)
-						{
-							itemShortcut->useItem(i
-									- KeyboardConfig::KEY_SHORTCUT_1);
-							break;
-						}
+						if (target->getType() == Being::NPC)
+							dynamic_cast<NPC*> (target)->talk();
 					}
 				}
+			}
 
-				switch (tKey)
+			// Stop attacking if the right key is pressed
+			if (!keyboard.isKeyActive(keyboard.KEY_ATTACK)
+					&& keyboard.isKeyActive(keyboard.KEY_TARGET))
+			{
+				player_node->stopAttack();
+			}
+
+			if (joystick)
+			{
+				if (joystick->buttonPressed(1))
 				{
-				case KeyboardConfig::KEY_PICKUP:
-				{
-#ifdef TMWSERV_SUPPORT
-					const Vector &pos = player_node->getPosition();
-					Uint16 x = (int) pos.x / 32;
-					Uint16 y = (int) pos.y / 32;
-#else
-					Uint16 x = player_node->mX;
-					Uint16 y = player_node->mY;
-#endif
 					FloorItem *item = floorItemManager->findByCoordinates(x, y);
-
-					// If none below the player, try the tile in front
-					// of the player
-					if (!item)
-					{
-						// Temporary until tile-based picking is
-						// removed.
-						switch (player_node->getSpriteDirection())
-						{
-						case DIRECTION_UP:
-							--y;
-							break;
-						case DIRECTION_DOWN:
-							++y;
-							break;
-						case DIRECTION_LEFT:
-							--x;
-							break;
-						case DIRECTION_RIGHT:
-							++x;
-							break;
-						default:
-							break;
-						}
-
-						item = floorItemManager->findByCoordinates(x, y);
-					}
 
 					if (item)
 						player_node->pickUp(item);
-
-					used = true;
 				}
-					break;
-				case KeyboardConfig::KEY_BOT:
-					if (!isBotOn)
-					{
-						if (player_node->getTarget())
-						{
-							isBotOn = true;
-							isBotStandby = false;
-							targetType = player_node->getTarget()->getName();
-							player_node->setTargetDelay(6000);
-							mapName = map_path;
-							localChatTab->chatLog(_("Bot turned on."),
-									BY_SERVER);
-						}
-						else
-							localChatTab->chatLog(
-									_("Bot cannot turn on. No Target."),
-									BY_SERVER);
-					}
-					else
-					{
-						isBotOn = false;
-						isBotStandby = false;
-						targetType = "";
-						mapName = "";
-						wrongActStarted = false;
-						wrongMapTimer = 0;
-						player_node->setTargetDelay(60000);
-						localChatTab->chatLog(_("Bot turned off."), BY_SERVER);
-					}
-
-					used = true;
-					break;
-				case KeyboardConfig::KEY_HEAL:
-					if (player_node->getTarget())
-						localChatTab->chatInput("#inma "
-								+ player_node->getTarget()->getName());
-					else
-						localChatTab->chatInput("#lum");
-					break;
-				case KeyboardConfig::KEY_ARROW:
-					localChatTab->chatInput("#frillyar");
-					RandTauntsTalk();
-					break;
-				case KeyboardConfig::KEY_LIGHTNING:
-					localChatTab->chatInput("#ingrav");
-					RandTauntsTalk();
-					break;
-				case KeyboardConfig::KEY_GREET:
-					RandGreetTalk();
-					break;
-				case KeyboardConfig::KEY_BYE:
-					RandByeTalk();
-					break;
-				case KeyboardConfig::KEY_TAUNTS:
-					RandTauntsTalk();
-					break;
-				case KeyboardConfig::KEY_THANKS:
-					RandThanksTalk();
-					break;
-				case KeyboardConfig::KEY_MK:
-					RandMkTalk();
-					break;
-                                case KeyboardConfig::KEY_RANDMOVE:
- 	                             randMove = !randMove;
-	                             if(randMove)
- 	                             {
- 	                               randMoveTimer = 0;
-                                       localChatTab->chatLog(_("Random movement enabled"), BY_SERVER);
- 	                             }
- 	                             else
-	                             {
-	                               randMoveTimer = 0;
-                                       localChatTab->chatLog(_("Random movement disabled"), BY_SERVER);
-	                             }
-                                        break;
-				case KeyboardConfig::KEY_SPAMEMOTE:
-					manaLeach = !manaLeach;
-					if (manaLeach)
-					{
-						leachTimer = 0;
-						localChatTab->chatLog(_("Emote spam enabled"),
-								BY_SERVER);
-					}
-					else
-					{
-						leachTimer = 0;
-						localChatTab->chatLog(_("Emote spam disabled"),
-								BY_SERVER);
-					}
-					break;
-				case KeyboardConfig::KEY_LIFESTONES:
-					spellTrain = !spellTrain;
-					if (spellTrain)
-					{
-						spellTimer = 0;
-						localChatTab->chatLog(
-								_("Auto life stone creation enabled"),
-								BY_SERVER);
-					}
-					else
-					{
-						spellTimer = 0;
-						localChatTab->chatLog(
-								_("Auto life stone creation disabled"),
-								BY_SERVER);
-					}
-					break;
-				case KeyboardConfig::KEY_AGGRO:
-					localChatTab->chatInput("#itenplz");
-					break;
-				case KeyboardConfig::KEY_AUTOPICKUP:
-					bAutoPickup = !bAutoPickup;
-
-					if (bAutoPickup)
-					{
-						localChatTab->chatLog(_("Auto Pickup turned on."),
-								BY_SERVER);
-						Net::getAdminHandler()->announce("?");
-					}
-					else
-					{
-						localChatTab->chatLog(_("Auto Pickup turned off."),
-								BY_SERVER);
-						Net::getAdminHandler()->localAnnounce("?");
-					}
-
-					break;
-				case KeyboardConfig::KEY_FOLLOW:
-					if (!bFollowPlayer)
-					{
-						if (player_node->getTarget())
-						{
-							bFollowPlayer = true;
-							targetName = player_node->getTarget()->getName();
-							localChatTab->chatLog(
-									_("Follow player turned on."),
-									BY_SERVER);
-						}
-						else
-							localChatTab->chatLog(
-									_("Follow player failed. No Target."),
-									BY_SERVER);
-					}
-					else
-					{
-						bFollowPlayer = false;
-						localChatTab->chatLog(_("Follow player turned off."),
-								BY_SERVER);
-						targetName = "";
-					}
-
-					break;
-				case KeyboardConfig::KEY_SIT:
-					// Player sit action
-					player_node->toggleSit(false);
-					used = true;
-					break;
-				case KeyboardConfig::KEY_SIT2:
-					// Player sit action
-					player_node->toggleSit(true);
-					used = true;
-					break;
-				case KeyboardConfig::KEY_HIDE_WINDOWS:
-					// Hide certain windows
-					if (!chatWindow->isInputFocused())
-					{
-						statusWindow->setVisible(false);
-						inventoryWindow->setVisible(false);
-						skillDialog->setVisible(false);
-						setupWindow->setVisible(false);
-						equipmentWindow->setVisible(false);
-						helpWindow->setVisible(false);
-						debugWindow->setVisible(false);
-#ifdef TMWSERV_SUPPORT
-						guildWindow->setVisible(false);
-						buddyWindow->setVisible(false);
-#endif
-					}
-					break;
-				case KeyboardConfig::KEY_WINDOW_STATUS:
-					requestedWindow = statusWindow;
-					break;
-				case KeyboardConfig::KEY_WINDOW_INVENTORY:
-					requestedWindow = inventoryWindow;
-					break;
-				case KeyboardConfig::KEY_WINDOW_EQUIPMENT:
-					requestedWindow = equipmentWindow;
-					break;
-				case KeyboardConfig::KEY_WINDOW_SKILL:
-					requestedWindow = skillDialog;
-					break;
-				case KeyboardConfig::KEY_WINDOW_MINIMAP:
-					minimap->toggle();
-					break;
-				case KeyboardConfig::KEY_WINDOW_CHAT:
-					requestedWindow = chatWindow;
-					break;
-				case KeyboardConfig::KEY_WINDOW_SHORTCUT:
-					requestedWindow = itemShortcutWindow;
-					break;
-				case KeyboardConfig::KEY_WINDOW_SETUP:
-					requestedWindow = setupWindow;
-					break;
-				case KeyboardConfig::KEY_WINDOW_DEBUG:
-					requestedWindow = debugWindow;
-					break;
-				case KeyboardConfig::KEY_WINDOW_PARTY:
-					requestedWindow = partyWindow;
-					break;
-				case KeyboardConfig::KEY_WINDOW_EMOTE_SHORTCUT:
-					requestedWindow = emoteShortcutWindow;
-					break;
-				case KeyboardConfig::KEY_SCREENSHOT:
-					// Screenshot (picture, hence the p)
-					saveScreenshot();
-					used = true;
-					break;
-				case KeyboardConfig::KEY_PATHFIND:
-					// Find path to mouse (debug purpose)
-					viewport->toggleDebugPath();
-					used = true;
-					break;
-				case KeyboardConfig::KEY_TRADE:
-					// Toggle accepting of incoming trade requests
-					unsigned int deflt = player_relations.getDefault();
-					if (deflt & PlayerRelation::TRADE)
-					{
-						localChatTab->chatLog(
-								_("Ignoring incoming trade requests"),
-								BY_SERVER);
-						deflt &= ~PlayerRelation::TRADE;
-					}
-					else
-					{
-						localChatTab->chatLog(
-								_("Accepting incoming trade requests"),
-								BY_SERVER);
-						deflt |= PlayerRelation::TRADE;
-					}
-
-					player_relations.setDefault(deflt);
-
-					used = true;
-					break;
-				}
-			}
-
-			if (requestedWindow)
-			{
-				requestedWindow->setVisible(!requestedWindow->isVisible());
-				if (requestedWindow->isVisible())
-					requestedWindow->requestMoveToTop();
-				used = true;
-			}
-		}
-		// Quit event
-		else if (event.type == SDL_QUIT)
-		{
-			done = true;
-		}
-
-		// Push input to GUI when not used
-		if (!used)
-		{
-			try
-			{
-				guiInput->pushInput(event);
-			} catch (gcn::Exception e)
-			{
-				const char* err = e.getMessage().c_str();
-				logger->log("Warning: guichan input exception: %s", err);
-			}
-		}
-
-	} // End while
-
-	// If the user is configuring the keys then don't respond.
-	if (!keyboard.isEnabled())
-		return;
-
-	// Moving player around
-	if (player_node->mAction != Being::DEAD && current_npc == 0
-			&& !chatWindow->isInputFocused())
-	{
-		// Get the state of the keyboard keys
-		keyboard.refreshActiveKeys();
-
-		// Ignore input if either "ignore" key is pressed
-		// Stops the character moving about if the user's window manager
-		// uses "ignore+arrow key" to switch virtual desktops.
-		if (keyboard.isKeyActive(keyboard.KEY_IGNORE_INPUT_1)
-				|| keyboard.isKeyActive(keyboard.KEY_IGNORE_INPUT_2))
-		{
-			return;
-		}
-
-#ifdef TMWSERV_SUPPORT
-		const Vector &pos = player_node->getPosition();
-		const Uint16 x = (int) pos.x / 32;
-		const Uint16 y = (int) pos.y / 32;
-#else
-		const Uint16 x = player_node->mX;
-		const Uint16 y = player_node->mY;
-#endif
-		unsigned char direction = 0;
-
-		// Translate pressed keys to movement and direction
-		if (keyboard.isKeyActive(keyboard.KEY_MOVE_UP) || (joystick
-				&& joystick->isUp()))
-		{
-			direction |= Being::UP;
-		}
-		else if (keyboard.isKeyActive(keyboard.KEY_MOVE_DOWN) || (joystick
-				&& joystick->isDown()))
-		{
-			direction |= Being::DOWN;
-		}
-
-		if (keyboard.isKeyActive(keyboard.KEY_MOVE_LEFT) || (joystick
-				&& joystick->isLeft()))
-		{
-			direction |= Being::LEFT;
-		}
-		else if (keyboard.isKeyActive(keyboard.KEY_MOVE_RIGHT) || (joystick
-				&& joystick->isRight()))
-		{
-			direction |= Being::RIGHT;
-		}
-
-#ifdef TMWSERV_SUPPORT
-		// First if player is pressing key for the direction he is already
-		// going
-		if (direction == player_node->getWalkingDir())
-		{
-			player_node->setWalkingDir(direction);
-		}
-		// Else if he is pressing a key, and its different from what he has
-		// been pressing, stop (do not send this stop to the server) and
-		// start in the new direction
-
-		else if (direction && direction != player_node->getWalkingDir())
-		{
-			player_node->stopWalking(false);
-			player_node->setWalkingDir(direction);
-		}
-		// Else, he is not pressing a key, stop (sending to server)
-
-		else
-		{
-			player_node->stopWalking(true);
-		}
-#else
-		player_node->setWalkingDir(direction);
-
-		// Attacking monsters
-		if (keyboard.isKeyActive(keyboard.KEY_ATTACK) || (joystick
-				&& joystick->buttonPressed(0)))
-		{
-			if (player_node->getTarget())
-				player_node->attack(player_node->getTarget(), true);
-		}
-
-		if (keyboard.isKeyActive(keyboard.KEY_TARGET_ATTACK))
-		{
-			Being *target = NULL;
-
-			bool newTarget = !keyboard.isKeyActive(keyboard.KEY_TARGET);
-			// A set target has highest priority
-			if (!player_node->getTarget())
-			{
-				Uint16 targetX = x, targetY = y;
-				// Only auto target Monsters
-				target = beingManager->findNearestLivingBeing(targetX, targetY,
-						20, Being::MONSTER);
-			}
-			player_node->attack(target, newTarget);
-		}
-
-#endif
-
-		// Target the nearest player/monster/npc
-		if ((keyboard.isKeyActive(keyboard.KEY_TARGET_PLAYER)
-				|| keyboard.isKeyActive(keyboard.KEY_TARGET_CLOSEST)
-				|| keyboard.isKeyActive(keyboard.KEY_TARGET_NPC) || (joystick
-				&& joystick->buttonPressed(3))) && !keyboard.isKeyActive(
-				keyboard.KEY_TARGET))
-		{
-			Being::Type currentTarget = Being::UNKNOWN;
-			if (keyboard.isKeyActive(keyboard.KEY_TARGET_CLOSEST) || (joystick
-					&& joystick->buttonPressed(3)))
-				currentTarget = Being::MONSTER;
-			else if (keyboard.isKeyActive(keyboard.KEY_TARGET_PLAYER))
-				currentTarget = Being::PLAYER;
-			else if (keyboard.isKeyActive(keyboard.KEY_TARGET_NPC))
-				currentTarget = Being::NPC;
-
-			Being *target = beingManager->findNearestLivingBeing(player_node,
-					20, currentTarget);
-
-			if (target && (target != player_node->getTarget() || currentTarget
-					!= mLastTarget))
-			{
-				player_node->setTarget(target);
-				mLastTarget = currentTarget;
-			}
-		}
-		else
-			mLastTarget = Being::UNKNOWN; // Reset last target
-
-		// Talk to the nearest NPC if 't' pressed
-		if (keyboard.isKeyActive(keyboard.KEY_TALK))
-		{
-			if (!npcDialog->isVisible())
-			{
-				Being *target = player_node->getTarget();
-
-				if (target)
+				else if (joystick->buttonPressed(2))
 				{
-					if (target->getType() == Being::NPC)
-						dynamic_cast<NPC*> (target)->talk();
+					player_node->toggleSit(false);
 				}
-			}
-		}
-
-		// Stop attacking if the right key is pressed
-		if (!keyboard.isKeyActive(keyboard.KEY_ATTACK) && keyboard.isKeyActive(
-				keyboard.KEY_TARGET))
-		{
-			player_node->stopAttack();
-		}
-
-		if (joystick)
-		{
-			if (joystick->buttonPressed(1))
-			{
-				FloorItem *item = floorItemManager->findByCoordinates(x, y);
-
-				if (item)
-					player_node->pickUp(item);
-			}
-			else if (joystick->buttonPressed(2))
-			{
-				player_node->toggleSit(false);
 			}
 		}
 	}
-}
