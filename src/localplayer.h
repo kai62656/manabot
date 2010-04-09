@@ -128,6 +128,7 @@ class LocalPlayer : public Player
 {
     public:
 		bool noskulls;
+		bool noPickupDelay;
 		bool autoHeal;
 		bool square;
 		int top;

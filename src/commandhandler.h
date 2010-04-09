@@ -146,6 +146,7 @@ class CommandHandler
         void handleFu(const std::string &args, ChatTab *tab);
 		
 		void handleNoSkulls(const std::string &args, ChatTab *tab);
+		void handleNoPickupDelay(const std::string &args, ChatTab *tab);
 		void handleAutoHeal(const std::string &args, ChatTab *tab);
 		void handleSquare(const std::string &args, ChatTab *tab);
 		void handleSetTop(const std::string &args, ChatTab *tab);

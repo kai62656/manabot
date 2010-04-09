@@ -155,7 +155,6 @@ ChatTab *localChatTab = NULL;
 const int MAX_TIME = 10000;
 
 bool bAutoPickup = false;
-bool noPickupDelay = true;
 int pickupTimer = 0;
 
 bool isBotOn = false;
@@ -172,7 +171,6 @@ std::string mapName = "";
 int wrongMapTimer = 0;
 bool wrongActStarted = false;
 int conversationState = 0;
-
 int randomTimer = 0;
 
 bool bFollowPlayer = false;
@@ -182,7 +180,6 @@ int tilesPassed = 0;
 std::string targetName = "";
 
 bool bSitWalk = false;
-
 int idleTimer = 0;
 int walkTimer = 0;
 int stayTimer = 0;
@@ -190,10 +187,8 @@ int sysTimer = 0;
 int attackTimer = 0;
 int lastHealTimer = 0;
 bool attackDistBool = true;
-
 int mmX = 0;
 int mmY = 0;
-
 int gmTimer = 0;
 
 bool manaLeach = false;
@@ -563,7 +558,7 @@ void Game::logic()
 
 			//           handleGm();
 			pickupTimer++;
-			if (bAutoPickup && ( noPickupDelay || pickupTimer % 20 == 0 ))
+			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer % 20 == 0))
 			{
 				handlePickup(1);
 				pickupTimer = 0;

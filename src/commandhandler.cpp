@@ -133,6 +133,10 @@ void CommandHandler::handleCommand(const std::string &command, ChatTab *tab)
     {
         handleNoSkulls(args, tab);
     }
+    else if (type == "nopickupdelay")
+    {
+        handleNoPickupDelay(args, tab);
+    }
     else if (type == "autoheal")
     {
         handleAutoHeal(args, tab);
@@ -539,6 +543,22 @@ void CommandHandler::handleNoSkulls(const std::string &args, ChatTab *tab)
 	}else{
 		tab->chatInput("I hate skulls!");
 		player_node->noskulls = true;
+	}
+}
+void CommandHandler::handleNoPickupDelay(const std::string &args, ChatTab *tab)
+{
+	char opt;
+    if (args.empty()){
+		opt = 0;
+	}else {
+		opt = parseBoolean(args);
+	}
+	if (opt == 0) {
+		tab->chatLog("As you wish, Sir. I will pickup stuff with delay.", BY_SERVER);
+		player_node->noPickupDelay = false;
+	}else{
+		tab->chatLog("Pickup stuff as soon as possible, thats my work!", BY_SERVER);
+		player_node->noPickupDelay = true;
 	}
 }
 void CommandHandler::handleAutoHeal(const std::string &args, ChatTab *tab)

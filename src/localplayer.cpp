@@ -133,6 +133,7 @@ LocalPlayer::LocalPlayer(int id, int job, Map *map):
 #endif
 {
 	bool noskulls = false;
+    bool noPickupDelay = true;
 	bool autoHeal = false;
 	bool square = false;
 	int top = 0;
