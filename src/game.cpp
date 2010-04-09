@@ -1209,7 +1209,7 @@ void Game::handleFollow2()
 	}
 	else
 	{
-		if (tilesPassed > 10)
+		if (tilesPassed > 6000)
 		{
 			tilesPassed = 0;
 			lostTarget = false;
@@ -1218,7 +1218,7 @@ void Game::handleFollow2()
 		else
 		{
 			target = beingManager->findBeingByName(targetName);
-			if (!target)
+			if (!target && tilesPassed % 10 == 0)
 			{
 				switch (player_node->getSpriteDirection())
 				{
