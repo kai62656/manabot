@@ -155,6 +155,7 @@ ChatTab *localChatTab = NULL;
 const int MAX_TIME = 10000;
 
 bool bAutoPickup = false;
+bool noPickupDelay = true;
 int pickupTimer = 0;
 
 bool isBotOn = false;
@@ -562,7 +563,7 @@ void Game::logic()
 
 			//           handleGm();
 			pickupTimer++;
-			if (bAutoPickup && pickupTimer % 20 == 0)
+			if (bAutoPickup && ( noPickupDelay || pickupTimer % 20 == 0 ))
 			{
 				handlePickup(1);
 				pickupTimer = 0;
