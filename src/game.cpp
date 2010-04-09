@@ -179,7 +179,6 @@ bool lostTarget = false;
 int tilesPassed = 0;
 std::string targetName = "";
 
-bool bSitWalk = false;
 int idleTimer = 0;
 int walkTimer = 0;
 int stayTimer = 0;
@@ -196,6 +195,9 @@ int leachTimer = 0;
 
 bool spellTrain = false;
 int spellTimer = 0;
+
+bool randMove = false;
+int randMoveTimer = 0;
 
 /**
  * Listener used for exiting handling.
@@ -556,7 +558,6 @@ void Game::logic()
 		{
 			handleInput();
 
-			//           handleGm();
 			pickupTimer++;
 			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer % 20 == 0))
 			{
@@ -582,13 +583,15 @@ void Game::logic()
 				handleBot();
 			else if (bFollowPlayer)
 				handleFollow2();
-			//            else if (bSitWalk)
-			//                handleSitWalk();
-			//            if(manaLeach)
-			//                handleLeach();
 
-			//            if(spellTrain)
-			//                handleSpell();
+		        if(manaLeach)
+		                handleLeach();
+
+           		if(spellTrain)
+               		        handleSpell();
+
+	                if(randMove)
+                                handleRandMove();
 
 			engine->logic();
 			gameTime++;
@@ -645,47 +648,6 @@ void Game::logic()
 		}
 	}
 }
-
-//void WrongMapActing()
-//{
-//    static char const *const startMsg[] =
-//    {
-//        N_("omg.."),
-//        N_("hmmm...."),
-//        N_("ok.."),
-//        N_("...")
-//    };
-//    static char const *const endMsg[] =
-//    {
-//        N_("what is this place?"),
-//        N_("where am I?"),
-//        N_("what the hell?"),
-//        N_("i'm not supposed to be here")
-//    };
-//
-//    if (wrongMapTimer == 500)
-//    {
-//        const int random1 = rand() % (sizeof(startMsg) / sizeof(startMsg[0]));
-//        localChatTab->chatInput(gettext(startMsg[random1]));
-//    }
-//    else if (wrongMapTimer == 1000)
-//    {
-//        const int random2 = rand() % (sizeof(endMsg) / sizeof(endMsg[0]));
-//        localChatTab->chatInput(gettext(endMsg[random2]));
-//
-//        commandHandler->handleCommand("w Laticia GM intrusion!", localChatTab);
-//        commandHandler->handleCommand("w Jacinto GM intrusion!", localChatTab);
-//
-//        isBotOn = false;
-//        isBotStandby = true;
-//        targetType = "";
-//        mapName = "";
-//        wrongMapTimer = 0;
-//        player_node->setTargetDelay(60000);
-//        localChatTab->chatLog(_("Bot in standby due to GM intrusion."), BY_SERVER);
-//    }
-//    wrongMapTimer++;
-//}
 
 void Game::HandleBotResponse(std::string message, std::string sender,
 		bool whisper)
@@ -867,35 +829,15 @@ void RandTauntsTalk()
 	localChatTab->chatInput(gettext(randMsg[random1]));
 }
 
-bool checkForGm()
+void Game::handleRandMove()
 {
-	if (beingManager->findBeingByName("Katze", Being::PLAYER)
-			|| beingManager->findBeingByName("Platyna", Being::PLAYER)
-			|| beingManager->findBeingByName("CapitanAwesome", Being::PLAYER)
-			|| beingManager->findBeingByName("Cappy", Being::PLAYER)
-			|| beingManager->findBeingByName("Tiana", Being::PLAYER))
-		return true;
+    randMoveTimer++;
+    if(randMoveTimer >= 5)
+    {
+        randMoveTimer = 0;
+        takeRandomStep(2);
+    }
 
-	return false;
-}
-
-void Game::handleGm()
-{
-	if (checkForGm())
-	{
-		//       if(gmTimer >= 4000)
-		//        {
-		//           player_node->emote(7);
-		//           gmTimer = 0;   
-		//        }
-		//        else
-		//        {
-		//           gmTimer++;
-		//        }
-
-	}
-
-	return;
 }
 
 void Game::handleBot()
@@ -1047,133 +989,6 @@ bool Game::handlePickup(int range)
 	return false;
 }
 
-void Game::handleFollow()
-{
-	Being *target = player_node->getTarget();
-
-	if (player_node->mAction != Being::ATTACK)
-		target = beingManager->findBeingByName(targetName);
-
-	if (target)
-	{
-		Uint16 x = target->mX;
-		Uint16 y = target->mY;
-
-		switch (target->getSpriteDirection())
-		{
-		case DIRECTION_UP:
-			++y;
-			break;
-		case DIRECTION_DOWN:
-			--y;
-			break;
-		case DIRECTION_LEFT:
-			++x;
-			break;
-		case DIRECTION_RIGHT:
-			--x;
-			break;
-		default:
-			break;
-		}
-
-		if (!player_node->withinAttackRange(target))
-			player_node->setDestination(x, y);
-
-		if (target->mAction == Being::SIT)
-		{
-			if (player_node->mAction != Being::SIT)
-				player_node->toggleSit(true);
-
-			if (player_node->getSpriteDirection()
-					!= target->getSpriteDirection())
-			{
-				switch (target->getSpriteDirection())
-				{
-				case DIRECTION_UP:
-					player_node->setWalkingDir(Being::UP);
-					break;
-				case DIRECTION_DOWN:
-					player_node->setWalkingDir(Being::DOWN);
-					break;
-				case DIRECTION_LEFT:
-					player_node->setWalkingDir(Being::LEFT);
-					break;
-				case DIRECTION_RIGHT:
-					player_node->setWalkingDir(Being::RIGHT);
-					break;
-				default:
-					break;
-				}
-			}
-		}
-		else if (target->mAction == Being::ATTACK)
-		{
-			target = beingManager->findNearestLivingBeing(target, 1,
-					Being::MONSTER);
-
-			if (target)
-			{
-				if (player_node->mAction == Being::SIT)
-					player_node->toggleSit(false);
-
-				if (!player_node->withinAttackRange(target))
-					player_node->setGotoTarget(target);
-
-				player_node->attack(target, true);
-			}
-		}
-		else
-		{
-			if (player_node->mAction == Being::SIT)
-				player_node->toggleSit(false);
-		}
-	}
-	else
-	{
-		if (tilesPassed > 600)
-		{
-			tilesPassed = 0;
-			lostTarget = false;
-			bFollowPlayer = false;
-		}
-		else
-		{
-			target = beingManager->findBeingByName(targetName);
-
-			if (!target)
-			{
-				Uint16 x = target->mX;
-				Uint16 y = target->mY;
-
-				switch (player_node->getSpriteDirection())
-				{
-				case DIRECTION_UP:
-					player_node->setWalkingDir(Being::UP);
-					break;
-				case DIRECTION_DOWN:
-					player_node->setWalkingDir(Being::DOWN);
-					break;
-				case DIRECTION_LEFT:
-					player_node->setWalkingDir(Being::LEFT);
-					break;
-				case DIRECTION_RIGHT:
-					player_node->setWalkingDir(Being::RIGHT);
-					break;
-				default:
-					break;
-				}
-				tilesPassed++;
-			}
-			else
-			{
-				player_node->setTarget(target);
-				tilesPassed = 0;
-			}
-		}
-	}
-}
-
 void Game::handleFollow2()
 {
 	Being *target = beingManager->findBeingByName(targetName);
@@ -1245,13 +1060,6 @@ void Game::handleFollow2()
 			}
 		}
 	}
-}
-
-void Game::handleSitWalk()
-{
-	//if(player_node->mAction != Being::SIT)
-	//bSitWalk = false;
-	//Net::getPlayerHandler()->decreaseStat(LocalPlayer::STR);
 }
 
 void Game::handleInput()
@@ -1541,26 +1349,6 @@ void Game::handleInput()
 					localChatTab->chatInput("#ingrav");
 					RandTauntsTalk();
 					break;
-				case KeyboardConfig::KEY_DWALKUP:
-					player_node->setDirection(Being::RIGHT);
-					player_node->setDestination(player_node->mX,
-							player_node->mY - 1);
-					break;
-				case KeyboardConfig::KEY_DWALKDOWN:
-					player_node->setDirection(Being::LEFT);
-					player_node->setDestination(player_node->mX,
-							player_node->mY + 1);
-					break;
-				case KeyboardConfig::KEY_DWALKRIGHT:
-					player_node->setDirection(Being::UP);
-					player_node->setDestination(player_node->mX + 1,
-							player_node->mY);
-					break;
-				case KeyboardConfig::KEY_DWALKLEFT:
-					player_node->setDirection(Being::DOWN);
-					player_node->setDestination(player_node->mX - 1,
-							player_node->mY);
-					break;
 				case KeyboardConfig::KEY_GREET:
 					RandGreetTalk();
 					break;
@@ -1576,6 +1364,19 @@ void Game::handleInput()
 				case KeyboardConfig::KEY_MK:
 					RandMkTalk();
 					break;
+                                case KeyboardConfig::KEY_RANDMOVE:
+ 	                             randMove = !randMove;
+	                             if(randMove)
+ 	                             {
+ 	                               randMoveTimer = 0;
+                                       localChatTab->chatLog(_("Random movement enabled"), BY_SERVER);
+ 	                             }
+ 	                             else
+	                             {
+	                               randMoveTimer = 0;
+                                       localChatTab->chatLog(_("Random movement disabled"), BY_SERVER);
+	                             }
+                                        break;
 				case KeyboardConfig::KEY_SPAMEMOTE:
 					manaLeach = !manaLeach;
 					if (manaLeach)
@@ -1650,23 +1451,6 @@ void Game::handleInput()
 						localChatTab->chatLog(_("Follow player turned off."),
 								BY_SERVER);
 						targetName = "";
-					}
-
-					break;
-				case KeyboardConfig::KEY_FAST:
-					bSitWalk = !bSitWalk;
-
-					if (bSitWalk)
-					{
-						localChatTab->chatLog(_("Sit Walk turned on."),
-								BY_SERVER);
-						player_node->setActionDelay(5);
-					}
-					else
-					{
-						localChatTab->chatLog(_("Sit Walk turned off."),
-								BY_SERVER);
-						player_node->setActionDelay(1000);
 					}
 
 					break;
