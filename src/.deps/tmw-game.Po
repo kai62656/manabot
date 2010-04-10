@@ -1,4 +1,4 @@
-tmw-game.o tmw-game.o: game.cpp extra/follow.h beingmanager.h being.h \
+tmw-game.o tmw-game.o: game.cpp beingmanager.h being.h \
   /usr/local/include/guichan/color.hpp \
   /usr/local/include/guichan/platform.hpp /usr/include/c++/4.2.1/iostream \
   /usr/include/c++/4.2.1/i686-apple-darwin10/x86_64/bits/c++config.h \
@@ -218,8 +218,6 @@ tmw-game.o tmw-game.o: game.cpp extra/follow.h beingmanager.h being.h \
   resources/imagewriter.h utils/gettext.h ../config.h \
   /usr/local/include/guichan/exception.hpp \
   /usr/local/include/guichan/focushandler.hpp /usr/local/include/physfs.h
-
-extra/follow.h:
 
 beingmanager.h:
 
