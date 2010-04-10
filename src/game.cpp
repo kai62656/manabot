@@ -978,8 +978,9 @@ void Game::handleFollow()
 				wasKilled = true;
 			if (player_node->getTarget())
 				player_node->getTarget()->untarget();
-			if (target->mAction == Being::SIT && player_node->mAction
-					!= Being::SIT)
+			if ((target->mAction == Being::SIT && player_node->mAction
+					!= Being::SIT) || (target->mAction != Being::SIT
+					&& player_node->mAction == Being::SIT))
 				player_node->toggleSit(false);
 		}
 		if (target->mAction == Being::ATTACK && player_node->mAction
