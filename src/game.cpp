@@ -861,16 +861,17 @@ void Game::handleBot()
 				player_node->toggleSit(false);
 			stayTimer = 0;
 		}
-		player_node->setTarget(beingManager->findNearestLivingBeingNotName(
-				player_node, 20, Being::MONSTER,
-				player_node->noskulls ? "Skull" : ""));
-		//        player_node->setTarget(beingManager->findIsolatedBeing(player_node, 18, Being::MONSTER, targetType));
+		//	player_node->setTarget(beingManager->findNearestLivingBeingNotName(
+		//			player_node, 20, Being::MONSTER,
+		//			player_node->noskulls ? "Skull" : ""));
+		player_node->setTarget(beingManager->findIsolatedBeing(player_node, 20,
+				Being::MONSTER, targetType));
 		attackTimer = 0;
 		sysTimer = 0;
-		if (player_node->square && !player_node->getTarget())
-		{
+		if (stayTimer > 96 && player_node->square && !player_node->getTarget()
+				&& (player_node->mX != player_node->homex || player_node->mY
+						!= player_node->homey))
 			player_node->setDestination(player_node->homex, player_node->homey);
-		}
 	}
 	else
 	{
@@ -915,6 +916,7 @@ void Game::handleBot()
 			}
 		}
 		targetTimer = 0;
+		stayTimer = 0;
 	}
 }
 
