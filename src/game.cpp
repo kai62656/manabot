@@ -561,9 +561,9 @@ void Game::logic()
 			handleInput();
 
 			pickupTimer++;
-			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer > 7))
+			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer > 9))
 			{
-				handlePickup(1);
+				handlePickup(isBotOn ? player_node->botPickupRange : 1);
 				pickupTimer = 0;
 			}
 
@@ -886,7 +886,7 @@ void Game::handleBot()
 		//	player_node->setTarget(beingManager->findNearestLivingBeingNotName(
 		//			player_node, 20, Being::MONSTER,
 		//			player_node->noskulls ? "Skull" : ""));
-		if (!bAutoPickup || stayTimer > 50)
+		if (!bAutoPickup || (!itemNear(player_node->botPickupRange) && stayTimer > 60))
 		{
 			player_node->setTarget(beingManager->findIsolatedBeing(player_node,
 					20, Being::MONSTER, targetType));
@@ -981,6 +981,22 @@ bool Game::handlePickup(int range)
 				player_node->pickUp(item);
 				return true;
 			}
+		}
+	}
+	return false;
+}
+
+bool Game::itemNear(int range)
+{
+	Uint16 x = player_node->mX;
+	Uint16 y = player_node->mY;
+
+	for (int i = x - range; i <= x + range; i++)
+	{
+		for (int j = y - range; j <= y + range; j++)
+		{
+			if (FloorItem *item = floorItemManager->findByCoordinates(i, j))
+				return true;
 		}
 	}
 	return false;

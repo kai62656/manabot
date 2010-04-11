@@ -44,6 +44,7 @@ public:
 	void handleInput();
 
 	bool handlePickup(int range);
+	bool itemNear(int range);
 	void takeRandomStep(int distance);
 	void handleRandMove();
 	void handleBot();

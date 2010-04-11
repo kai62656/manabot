@@ -131,6 +131,7 @@ class LocalPlayer : public Player
 		bool noPickupDelay;
 		bool autoHeal;
 		bool square;
+		int botPickupRange;
 
 		int idleInterval;
 		std::string idleMessage;

@@ -134,6 +134,10 @@ void CommandHandler::handleCommand(const std::string &command, ChatTab *tab)
 	{
 		handleNoSkulls(args, tab);
 	}
+	else if (type == "botpickuprange")
+	{
+		handleBotPickupRange(args, tab);
+	}
 	else if (type == "nopickupdelay")
 	{
 		handleNoPickupDelay(args, tab);
@@ -732,5 +736,34 @@ void CommandHandler::handleUseIdle(const std::string &args, ChatTab *tab)
 	}
 }
 
+void CommandHandler::handleBotPickupRange(const std::string &args, ChatTab *tab)
+{
+	char opt;
+	if (args.empty())
+		return;
+	using namespace std;
+	string s = args;
+	int i;
+	bool success;
+	istringstream myStream(s);
+
+	if (myStream >> i)
+		success = true;
+	else
+		success = false;
+
+	std::stringstream msg;
+	if (success)
+	{
+		msg << "Bot pickup range: " << i;
+		tab->chatLog(msg.str(), BY_SERVER);
+		player_node->botPickupRange = i;
+	}
+	else
+	{
+		msg << "Failed to parse int!";
+		tab->chatLog(msg.str(), BY_SERVER);
+	}
+}
 // My Commands End
 
