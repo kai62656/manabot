@@ -561,7 +561,7 @@ void Game::logic()
 			handleInput();
 
 			pickupTimer++;
-			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer > 5 ))
+			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer >= 6))
 			{
 				handlePickup(1);
 				pickupTimer = 0;
@@ -886,10 +886,13 @@ void Game::handleBot()
 		//	player_node->setTarget(beingManager->findNearestLivingBeingNotName(
 		//			player_node, 20, Being::MONSTER,
 		//			player_node->noskulls ? "Skull" : ""));
-		player_node->setTarget(beingManager->findIsolatedBeing(player_node, 20,
-				Being::MONSTER, targetType));
-		attackTimer = 0;
-		sysTimer = 0;
+		if (!bAutoPickup || stayTimer > 50)
+		{
+			player_node->setTarget(beingManager->findIsolatedBeing(player_node,
+					20, Being::MONSTER, targetType));
+			attackTimer = 0;
+			sysTimer = 0;
+		}
 		if (stayTimer > 96 && player_node->square && !player_node->getTarget()
 				&& (player_node->mX != player_node->homex || player_node->mY
 						!= player_node->homey))
@@ -905,25 +908,21 @@ void Game::handleBot()
 		if (player_node->mX != player_node->getTarget()->mX || player_node->mY
 				!= player_node->getTarget()->mY)
 		{
-			attackDistBool = true;
 			attackTimer++;
-			if (player_node->withinAttackRange(player_node->getTarget()))
+			if (attackTimer % 5 == 0)
+			{
+				player_node->setTarget(beingManager->findIsolatedBeing(
+						player_node, 20, Being::MONSTER, targetType));
+				attackTimer = 0;
+			}
+			if (false && player_node->mAction != Being::ATTACK
+					&& player_node->withinAttackRange(player_node->getTarget()))
 			{
 				player_node->setDestination(player_node->mX, player_node->mY);
 				player_node->attack(player_node->getTarget(), true);
-				if (sysTimer % 50 != 0)
-				{
-					attackDistBool = false;
-				}
-			}
-			else if (attackTimer % 10 == 0)
-			{
-				player_node->setDestination(player_node->mX, player_node->mY);
-				player_node->getTarget()->untarget();
-				attackTimer = 0;
 				return;
 			}
-			if (attackDistBool && player_node->mAction != Being::WALK)
+			if (player_node->mAction != Being::WALK)
 			{
 				player_node->setDestination(player_node->getTarget()->mX,
 						player_node->getTarget()->mY);
