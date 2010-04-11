@@ -561,7 +561,7 @@ void Game::logic()
 			handleInput();
 
 			pickupTimer++;
-			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer > 9))
+			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer > 10))
 			{
 				handlePickup(isBotOn ? player_node->botPickupRange : 1);
 				pickupTimer = 0;
@@ -875,31 +875,37 @@ void Game::handleBot()
 
 	if (!player_node->getTarget())
 	{
-		if (player_node->mAction == Being::WALK)
-			return;
-		if (stayTimer++ > 100)
-		{
-			if (player_node->mAction != Being::SIT)
-				player_node->toggleSit(false);
-			stayTimer = 0;
-		}
+		stayTimer++;
 		//	player_node->setTarget(beingManager->findNearestLivingBeingNotName(
 		//			player_node, 20, Being::MONSTER,
 		//			player_node->noskulls ? "Skull" : ""));
-		if (!bAutoPickup || (!itemNear(player_node->botPickupRange) && stayTimer > 60))
+		if (stayTimer < 60 || (bAutoPickup && itemNear(
+				player_node->botPickupRange)))
+			return;
+		player_node->setTarget(beingManager->findIsolatedBeing(player_node, 20,
+				Being::MONSTER, player_node->botSameTarget ? targetType : ""));
+		if (player_node->getTarget())
 		{
-			player_node->setTarget(beingManager->findIsolatedBeing(player_node,
-					20, Being::MONSTER, player_node->botSameTarget ? targetType : ""));
 			attackTimer = 0;
 			sysTimer = 0;
+			return;
 		}
 		if (stayTimer > 96 && player_node->square && !player_node->getTarget()
 				&& (player_node->mX != player_node->homex || player_node->mY
 						!= player_node->homey))
 			player_node->setDestination(player_node->homex, player_node->homey);
+		if (stayTimer > 100)
+		{
+			if (player_node->mAction != Being::SIT)
+				player_node->toggleSit(false);
+			stayTimer = 0;
+		}
 	}
 	else
 	{
+		targetTimer = 0;
+		stayTimer = 0;
+
 		sysTimer++;
 		if (sysTimer > 1000)
 		{
@@ -911,8 +917,10 @@ void Game::handleBot()
 			attackTimer++;
 			if (attackTimer % 5 == 0)
 			{
+				player_node->setDestination(player_node->mX, player_node->mY);
 				player_node->setTarget(beingManager->findIsolatedBeing(
-						player_node, 20, Being::MONSTER, targetType));
+						player_node, 20, Being::MONSTER,
+						player_node->botSameTarget ? targetType : ""));
 				attackTimer = 0;
 			}
 			if (false && player_node->mAction != Being::ATTACK
@@ -936,8 +944,6 @@ void Game::handleBot()
 				player_node->attack(player_node->getTarget(), true);
 			}
 		}
-		targetTimer = 0;
-		stayTimer = 0;
 	}
 }
 
