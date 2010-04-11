@@ -561,7 +561,7 @@ void Game::logic()
 			handleInput();
 
 			pickupTimer++;
-			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer >= 6))
+			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer > 6))
 			{
 				handlePickup(1);
 				pickupTimer = 0;
