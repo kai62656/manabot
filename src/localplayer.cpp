@@ -133,9 +133,14 @@ LocalPlayer::LocalPlayer(int id, int job, Map *map):
 #endif
 {
 	bool noskulls = false;
-    bool noPickupDelay = true;
+    bool noPickupDelay = false;
 	bool autoHeal = false;
 	bool square = false;
+
+	int idleInterval = 20000;
+	std::string idleMessage = "Default IDLE message";
+	bool useIdle = false;
+
 	int top = 0;
 	int bottom = 0;
 	int left = 0;

@@ -156,6 +156,9 @@ private:
 	void handleSetLeft(const std::string &args, ChatTab *tab);
 	void handleSetRight(const std::string &args, ChatTab *tab);
 	void handleSetHome(const std::string &args, ChatTab *tab);
+	void handleIdleInterval(const std::string &args, ChatTab *tab);
+	void handleIdleMessage(const std::string &args, ChatTab *tab);
+	void handleUseIdle(const std::string &args, ChatTab *tab);
 };
 
 extern CommandHandler *commandHandler;
