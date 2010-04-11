@@ -370,8 +370,9 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 				|| closestBeing == NULL) // it is closer
 				&& being->mAction != Being::DEAD // no dead beings
 				&& being != aroundBeing && (name.empty() || being->getName()
-				== name) && aroundBeing->destinationReachable(being->mX,
-				being->mY))
+				== name) && being->getName().find("Spectre", 0)
+				== std::string::npos && aroundBeing->destinationReachable(
+				being->mX, being->mY))
 		//&& aroundBeing->mMap->findPath(aroundBeing->mX, aroundBeing->mY, being->mX, being->mY, aroundBeing->getWalkMask()))
 		{
 			dist = d;
