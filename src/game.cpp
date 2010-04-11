@@ -684,24 +684,29 @@ void Game::HandleBotResponse(std::string message, std::string sender,
 					+ " Listener turned off.", localChatTab);
 		}
 	}
-    else if(message.find("!quit") != std::string::npos && sender == botMaster)
-    {
-              Net::getGeneralHandler()->unload();
-    }
-    else if(message.find("!smack") != std::string::npos && sender == botMaster)
-    {
-       std::string userName = message.substr(17);
-       localChatTab->chatInput("/me smacks " + userName + " with a dead fluffy.");
-    }
-    else if(message.find("!say") != std::string::npos && sender == botMaster)
-    {
-       std::string restMsg = message.substr(15);
-       localChatTab->chatInput(sender + " says: " + restMsg);
-    }
-    else if(message.find("!respawn") != std::string::npos && sender == botMaster)
-    {
-              Net::getPlayerHandler()->respawn();
-    }
+	else if (message.find("!quit") != std::string::npos && sender == botMaster)
+	{
+		Net::getGeneralHandler()->unload();
+	}
+	else if (message.find("!smack") != std::string::npos && sender == botMaster)
+	{
+		// sender.length() + 4 (static: ": ") + 6
+		std::string userName = message.replace(0, sender.length() + 10, "");
+		if (!userName.empty())
+			localChatTab->chatInput("/me smacks " + userName
+					+ " with a dead fluffy.");
+	}
+	else if (message.find("!say") != std::string::npos && sender == botMaster)
+	{
+		std::string restMsg = message.replace(0, sender.length() + 8, "");
+		if (!restMsg.empty())
+			localChatTab->chatInput(sender + " says: " + restMsg);
+	}
+	else if (message.find("!respawn") != std::string::npos && sender
+			== botMaster)
+	{
+		Net::getPlayerHandler()->respawn();
+	}
 	else if (message == "!sit" && sender == botMaster)
 	{
 		player_node->toggleSit(false);
