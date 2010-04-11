@@ -364,14 +364,14 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 				> player_node->right || being->mY < player_node->top
 				|| being->mY > player_node->bottom))
 			continue;
-
 		int d = abs(being->mX - x) + abs(being->mY - y);
 
 		if ((being->getType() == type || type == Being::UNKNOWN) && (d < dist
 				|| closestBeing == NULL) // it is closer
 				&& being->mAction != Being::DEAD // no dead beings
-				&& being != aroundBeing && being->getName() == name
-				&& aroundBeing->destinationReachable(being->mX, being->mY))
+				&& being != aroundBeing && (name.empty() || being->getName()
+				== name) && aroundBeing->destinationReachable(being->mX,
+				being->mY))
 		//&& aroundBeing->mMap->findPath(aroundBeing->mX, aroundBeing->mY, being->mX, being->mY, aroundBeing->getWalkMask()))
 		{
 			dist = d;

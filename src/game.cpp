@@ -889,7 +889,7 @@ void Game::handleBot()
 		if (!bAutoPickup || (!itemNear(player_node->botPickupRange) && stayTimer > 60))
 		{
 			player_node->setTarget(beingManager->findIsolatedBeing(player_node,
-					20, Being::MONSTER, targetType));
+					20, Being::MONSTER, player_node->botSameTarget ? targetType : ""));
 			attackTimer = 0;
 			sysTimer = 0;
 		}
