@@ -921,6 +921,8 @@ void Game::handleBot()
 				player_node->setTarget(beingManager->findIsolatedBeing(
 						player_node, 20, Being::MONSTER,
 						player_node->botSameTarget ? targetType : ""));
+				if (!player_node->getTarget())
+					return;
 				attackTimer = 0;
 			}
 			if (false && player_node->mAction != Being::ATTACK
