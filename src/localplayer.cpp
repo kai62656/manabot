@@ -137,6 +137,7 @@ LocalPlayer::LocalPlayer(int id, int job, Map *map):
 	bool autoHeal = false;
 	bool square = false;
 	int botPickupRange = 1;
+	bool botSameTarget = false;
 
 	int idleInterval = 20000;
 	std::string idleMessage = "Default IDLE message";

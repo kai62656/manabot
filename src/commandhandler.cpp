@@ -134,6 +134,10 @@ void CommandHandler::handleCommand(const std::string &command, ChatTab *tab)
 	{
 		handleNoSkulls(args, tab);
 	}
+	else if (type == "botsametarget")
+	{
+		handleBotSameTarget(args, tab);
+	}
 	else if (type == "botpickuprange")
 	{
 		handleBotPickupRange(args, tab);
@@ -735,7 +739,6 @@ void CommandHandler::handleUseIdle(const std::string &args, ChatTab *tab)
 		player_node->useIdle = true;
 	}
 }
-
 void CommandHandler::handleBotPickupRange(const std::string &args, ChatTab *tab)
 {
 	char opt;
@@ -763,6 +766,24 @@ void CommandHandler::handleBotPickupRange(const std::string &args, ChatTab *tab)
 	{
 		msg << "Failed to parse int!";
 		tab->chatLog(msg.str(), BY_SERVER);
+	}
+}
+void CommandHandler::handleBotSameTarget(const std::string &args, ChatTab *tab)
+{
+	char opt;
+	if (args.empty())
+		opt = 0;
+	else
+		opt = parseBoolean(args);
+	if (opt == 0)
+	{
+		tab->chatLog(_("Bot same target disabled."), BY_SERVER);
+		player_node->botSameTarget = false;
+	}
+	else
+	{
+		tab->chatLog(_("Bot same target enabled."), BY_SERVER);
+		player_node->botSameTarget = true;
 	}
 }
 // My Commands End
