@@ -860,7 +860,7 @@ void Game::handleRandMove()
 	if (randMoveTimer >= 5)
 	{
 		randMoveTimer = 0;
-		takeRandomStep(2);
+		takeRandomStep(1);
 	}
 
 }
@@ -915,7 +915,7 @@ void Game::handleBot()
 				!= player_node->getTarget()->mY)
 		{
 			attackTimer++;
-			if (attackTimer % 5 == 0)
+			if (attackTimer % 100 == 0)
 			{
 				player_node->setDestination(player_node->mX, player_node->mY);
 				player_node->setTarget(beingManager->findIsolatedBeing(
