@@ -130,6 +130,10 @@ void CommandHandler::handleCommand(const std::string &command, ChatTab *tab)
 	{
 		handleFu(args, tab);
 	}
+	else if (type == "showstatus")
+	{
+		handleShowStatus(args, tab);
+	}
 	else if (type == "noskulls")
 	{
 		handleNoSkulls(args, tab);
@@ -786,5 +790,28 @@ void CommandHandler::handleBotSameTarget(const std::string &args, ChatTab *tab)
 		player_node->botSameTarget = true;
 	}
 }
+
+void CommandHandler::handleShowStatus(const std::string &args, ChatTab *tab)
+{
+	std::stringstream msg;
+
+	msg << "noskulls: " << player_node->noskulls ? "1" : "0";
+	msg << " botsametarget: " << player_node->botSameTarget ? "1" : "0";
+	msg << " botpickuprange: " << (int) player_node->botPickupRange;
+	msg << " nopickupdelay: " << (int) player_node->noPickupDelay;
+	msg << " autoheal: " << player_node->autoHeal ? "1" : "0";
+	msg << " square: " << player_node->square ? "1" : "0";
+	msg << " settop: " << (int) player_node->top;
+	msg << " setbottom: " << (int) player_node->bottom;
+	msg << " setleft: " << (int) player_node->left;
+	msg << " setright: " << (int) player_node->right;
+	msg << " sethome: " << (int) player_node->homex << ":"
+			<< (int) player_node->homey;
+	msg << " setidleinterval: " << (int) player_node->idleInterval;
+	msg << " setidlemessage: " << player_node->idleMessage;
+	msg << " setuseidle: " << player_node->useIdle ? "1" : "0";
+	tab->chatLog(msg.str(), BY_SERVER);
+}
+
 // My Commands End
 

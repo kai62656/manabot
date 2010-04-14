@@ -161,6 +161,7 @@ private:
 	void handleUseIdle(const std::string &args, ChatTab *tab);
 	void handleBotPickupRange(const std::string &args, ChatTab *tab);
 	void handleBotSameTarget(const std::string &args, ChatTab *tab);
+	void handleShowStatus(const std::string &args, ChatTab *tab);
 };
 
 extern CommandHandler *commandHandler;
