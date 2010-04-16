@@ -132,23 +132,22 @@ LocalPlayer::LocalPlayer(int id, int job, Map *map):
     , mExpMessageTime(0)
 #endif
 {
-	bool noskulls = false;
-    bool noPickupDelay = false;
-	bool autoHeal = false;
-	bool square = false;
-	int botPickupRange = 1;
-	bool botSameTarget = false;
+	noskulls = false;
+	autoHeal = true;
+	square = false;
+	botPickupRange = 1;
+	botSameTarget = false;
 
-	int idleInterval = 20000;
-	std::string idleMessage = "Default IDLE message";
-	bool useIdle = false;
+	idleInterval = 20000;
+	idleMessage = "Default IDLE message";
+	useIdle = false;
 
-	int top = 0;
-	int bottom = 0;
-	int left = 0;
-	int right = 0;
-	int homex = 0;
-	int homey = 0;
+	top = 0;
+	bottom = 0;
+	left = 0;
+	right = 0;
+	homex = 0;
+	homey = 0;
     // Variable to keep the local player from doing certain actions before a map
     // is initialized. e.g. drawing a player's name using the TextManager, since
     // it appears to be dependant upon map coordinates for updating drawing.
@@ -642,7 +641,6 @@ void LocalPlayer::emote(Uint8 emotion)
     if (mLastAction != -1)
         return;
     mLastAction = tick_time;
-
     Net::getPlayerHandler()->emote(emotion);
 }
 

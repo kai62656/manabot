@@ -35,6 +35,8 @@ class WindowMenu;
 class Game: public ConfigListener
 {
 public:
+	bool wasKilled;
+
 	Game();
 
 	~Game();

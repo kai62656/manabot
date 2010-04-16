@@ -134,12 +134,7 @@ net/ea/tmw-playerhandler.o net/ea/tmw-playerhandler.o:  \
   /usr/include/libxml2/libxml/xmlIO.h /usr/include/libxml2/libxml/SAX.h \
   /usr/include/libxml2/libxml/xlink.h /usr/include/libxml2/libxml/SAX2.h \
   flooritem.h localplayer.h player.h being.h net/ea/protocol.h \
-  net/messagein.h net/messageout.h engine.h localplayer.h log.h \
-  /usr/include/c++/4.2.1/fstream \
-  /usr/include/c++/4.2.1/i686-apple-darwin10/x86_64/bits/basic_file.h \
-  /usr/include/c++/4.2.1/bits/fstream.tcc npc.h units.h gui/buy.h \
-  gui/widgets/window.h graphics.h \
-  /usr/local/include/guichan/sdl/sdlgraphics.hpp \
+  net/messagein.h net/messageout.h engine.h localplayer.h game.h \
   /usr/local/include/SDL/SDL.h /usr/local/include/SDL/SDL_main.h \
   /usr/local/include/SDL/SDL_audio.h /usr/local/include/SDL/SDL_error.h \
   /usr/local/include/SDL/SDL_endian.h /usr/local/include/SDL/SDL_mutex.h \
@@ -151,9 +146,15 @@ net/ea/tmw-playerhandler.o net/ea/tmw-playerhandler.o:  \
   /usr/local/include/SDL/SDL_video.h \
   /usr/local/include/SDL/SDL_joystick.h /usr/local/include/SDL/SDL_quit.h \
   /usr/local/include/SDL/SDL_loadso.h /usr/local/include/SDL/SDL_timer.h \
-  /usr/local/include/SDL/SDL_version.h \
-  /usr/local/include/guichan/graphics.hpp /usr/include/c++/4.2.1/stack \
-  /usr/include/c++/4.2.1/deque /usr/include/c++/4.2.1/bits/stl_deque.h \
+  /usr/local/include/SDL/SDL_version.h log.h \
+  /usr/include/c++/4.2.1/fstream \
+  /usr/include/c++/4.2.1/i686-apple-darwin10/x86_64/bits/basic_file.h \
+  /usr/include/c++/4.2.1/bits/fstream.tcc npc.h units.h gui/buy.h \
+  gui/widgets/window.h graphics.h \
+  /usr/local/include/guichan/sdl/sdlgraphics.hpp \
+  /usr/local/include/SDL/SDL.h /usr/local/include/guichan/graphics.hpp \
+  /usr/include/c++/4.2.1/stack /usr/include/c++/4.2.1/deque \
+  /usr/include/c++/4.2.1/bits/stl_deque.h \
   /usr/include/c++/4.2.1/bits/deque.tcc \
   /usr/include/c++/4.2.1/bits/stl_stack.h \
   /usr/local/include/guichan/cliprectangle.hpp \
@@ -601,25 +602,7 @@ engine.h:
 
 localplayer.h:
 
-log.h:
-
-/usr/include/c++/4.2.1/fstream:
-
-/usr/include/c++/4.2.1/i686-apple-darwin10/x86_64/bits/basic_file.h:
-
-/usr/include/c++/4.2.1/bits/fstream.tcc:
-
-npc.h:
-
-units.h:
-
-gui/buy.h:
-
-gui/widgets/window.h:
-
-graphics.h:
-
-/usr/local/include/guichan/sdl/sdlgraphics.hpp:
+game.h:
 
 /usr/local/include/SDL/SDL.h:
 
@@ -662,6 +645,28 @@ graphics.h:
 /usr/local/include/SDL/SDL_timer.h:
 
 /usr/local/include/SDL/SDL_version.h:
+
+log.h:
+
+/usr/include/c++/4.2.1/fstream:
+
+/usr/include/c++/4.2.1/i686-apple-darwin10/x86_64/bits/basic_file.h:
+
+/usr/include/c++/4.2.1/bits/fstream.tcc:
+
+npc.h:
+
+units.h:
+
+gui/buy.h:
+
+gui/widgets/window.h:
+
+graphics.h:
+
+/usr/local/include/guichan/sdl/sdlgraphics.hpp:
+
+/usr/local/include/SDL/SDL.h:
 
 /usr/local/include/guichan/graphics.hpp:
 

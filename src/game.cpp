@@ -165,9 +165,6 @@ std::string botMaster = "Haunted";
 std::string botFriend = "";
 int targetTimer = 0;
 
-// handleFollow()
-bool wasKilled = false;
-
 bool botListen = false;
 
 std::string mapName = "";
@@ -335,6 +332,9 @@ static void destroyGuiWindows()
 Game::Game() :
 	mLastTarget(Being::UNKNOWN), mLogicCounterId(0), mSecondsCounterId(0)
 {
+	// handleFollow()
+	wasKilled = false;
+
 	done = false;
 
 	createGuiWindows();
@@ -561,7 +561,7 @@ void Game::logic()
 			handleInput();
 
 			pickupTimer++;
-			if (bAutoPickup && (player_node->noPickupDelay || pickupTimer > 10))
+			if (bAutoPickup && pickupTimer > 10)
 			{
 				handlePickup(isBotOn ? player_node->botPickupRange : 1);
 				pickupTimer = 0;
@@ -1021,8 +1021,10 @@ void Game::handleFollow()
 			player_node->setDestination(target->mX, target->mY);
 		if (target->mAction != Being::ATTACK)
 		{
-			if (target->mAction == Being::DEAD)
+			if (target->mAction == Being::DEAD || player_node->mAction == Being::DEAD){
 				wasKilled = true;
+				return;
+			}
 			if (player_node->getTarget())
 				player_node->getTarget()->untarget();
 			if ((target->mAction == Being::SIT && player_node->mAction
