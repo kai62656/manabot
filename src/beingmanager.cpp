@@ -374,7 +374,6 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 				== std::string::npos && ((aroundBeing->mX == being->mX
 				&& aroundBeing->mY == being->mY)
 				|| aroundBeing->destinationReachable(being->mX, being->mY)))
-		//&& aroundBeing->mMap->findPath(aroundBeing->mX, aroundBeing->mY, being->mX, being->mY, aroundBeing->getWalkMask()))
 		{
 			dist = d;
 			closestBeing = being;
