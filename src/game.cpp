@@ -157,7 +157,6 @@ const int MAX_TIME = 10000;
 bool bAutoPickup = false;
 int pickupTimer = 0;
 
-bool isBotOn = false;
 bool isBotStandby = false;
 int standbyTimer = 0;
 std::string targetType = "";
@@ -334,6 +333,7 @@ Game::Game() :
 {
 	// handleFollow()
 	wasKilled = false;
+	isBotOn = false;
 
 	done = false;
 

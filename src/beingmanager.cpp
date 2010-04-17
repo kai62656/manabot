@@ -26,6 +26,7 @@
 #include "npc.h"
 #include "player.h"
 #include "map.h"
+#include "game.h"
 
 #ifdef TMWSERV_SUPPORT
 #include "net/tmwserv/protocol.h"
@@ -34,6 +35,8 @@
 #include "utils/dtor.h"
 
 #include <cassert>
+
+extern Game game;
 
 class FindBeingFunctor
 {
@@ -361,7 +364,7 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 			!= i_end; ++i)
 	{
 		Being *being = (*i);
-		if (player_node->square && (being->mX < player_node->left || being->mX
+		if ( game.isBotOn && player_node->square && (being->mX < player_node->left || being->mX
 				> player_node->right || being->mY < player_node->top
 				|| being->mY > player_node->bottom))
 			continue;

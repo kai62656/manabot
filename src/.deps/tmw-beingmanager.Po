@@ -132,7 +132,19 @@ tmw-beingmanager.o tmw-beingmanager.o: beingmanager.cpp beingmanager.h \
   /usr/include/libxml2/libxml/encoding.h \
   /usr/include/libxml2/libxml/xmlIO.h /usr/include/libxml2/libxml/SAX.h \
   /usr/include/libxml2/libxml/xlink.h /usr/include/libxml2/libxml/SAX2.h \
-  localplayer.h player.h monster.h npc.h utils/dtor.h \
+  localplayer.h player.h monster.h npc.h game.h \
+  /usr/local/include/SDL/SDL.h /usr/local/include/SDL/SDL_main.h \
+  /usr/local/include/SDL/SDL_audio.h /usr/local/include/SDL/SDL_error.h \
+  /usr/local/include/SDL/SDL_endian.h /usr/local/include/SDL/SDL_mutex.h \
+  /usr/local/include/SDL/SDL_thread.h /usr/local/include/SDL/SDL_rwops.h \
+  /usr/local/include/SDL/SDL_cdrom.h /usr/local/include/SDL/SDL_cpuinfo.h \
+  /usr/local/include/SDL/SDL_events.h /usr/local/include/SDL/SDL_active.h \
+  /usr/local/include/SDL/SDL_keyboard.h \
+  /usr/local/include/SDL/SDL_keysym.h /usr/local/include/SDL/SDL_mouse.h \
+  /usr/local/include/SDL/SDL_video.h \
+  /usr/local/include/SDL/SDL_joystick.h /usr/local/include/SDL/SDL_quit.h \
+  /usr/local/include/SDL/SDL_loadso.h /usr/local/include/SDL/SDL_timer.h \
+  /usr/local/include/SDL/SDL_version.h utils/dtor.h \
   /usr/include/c++/4.2.1/functional /usr/include/c++/4.2.1/cassert \
   /usr/include/assert.h
 
@@ -533,6 +545,50 @@ player.h:
 monster.h:
 
 npc.h:
+
+game.h:
+
+/usr/local/include/SDL/SDL.h:
+
+/usr/local/include/SDL/SDL_main.h:
+
+/usr/local/include/SDL/SDL_audio.h:
+
+/usr/local/include/SDL/SDL_error.h:
+
+/usr/local/include/SDL/SDL_endian.h:
+
+/usr/local/include/SDL/SDL_mutex.h:
+
+/usr/local/include/SDL/SDL_thread.h:
+
+/usr/local/include/SDL/SDL_rwops.h:
+
+/usr/local/include/SDL/SDL_cdrom.h:
+
+/usr/local/include/SDL/SDL_cpuinfo.h:
+
+/usr/local/include/SDL/SDL_events.h:
+
+/usr/local/include/SDL/SDL_active.h:
+
+/usr/local/include/SDL/SDL_keyboard.h:
+
+/usr/local/include/SDL/SDL_keysym.h:
+
+/usr/local/include/SDL/SDL_mouse.h:
+
+/usr/local/include/SDL/SDL_video.h:
+
+/usr/local/include/SDL/SDL_joystick.h:
+
+/usr/local/include/SDL/SDL_quit.h:
+
+/usr/local/include/SDL/SDL_loadso.h:
+
+/usr/local/include/SDL/SDL_timer.h:
+
+/usr/local/include/SDL/SDL_version.h:
 
 utils/dtor.h:
 
