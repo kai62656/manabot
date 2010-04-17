@@ -887,7 +887,6 @@ void Game::handleBot()
 		if (player_node->getTarget())
 		{
 			attackTimer = 0;
-			sysTimer = 0;
 			return;
 		}
 		if (stayTimer > 96 && player_node->square && !player_node->getTarget()
@@ -906,25 +905,21 @@ void Game::handleBot()
 		targetTimer = 0;
 		stayTimer = 0;
 
-		sysTimer++;
-		if (sysTimer > 1000)
+		attackTimer++;
+		if (attackTimer % 20 == 0)
 		{
-			sysTimer = 0;
+			player_node->setDestination(player_node->mX, player_node->mY);
+			player_node->setTarget(beingManager->findIsolatedBeing(player_node,
+					20, Being::MONSTER, player_node->botSameTarget ? targetType
+							: ""));
+			if (!player_node->getTarget())
+				return;
+			attackTimer = 0;
 		}
+
 		if (player_node->mX != player_node->getTarget()->mX || player_node->mY
 				!= player_node->getTarget()->mY)
 		{
-			attackTimer++;
-			if (attackTimer % 100 == 0)
-			{
-				player_node->setDestination(player_node->mX, player_node->mY);
-				player_node->setTarget(beingManager->findIsolatedBeing(
-						player_node, 20, Being::MONSTER,
-						player_node->botSameTarget ? targetType : ""));
-				if (!player_node->getTarget())
-					return;
-				attackTimer = 0;
-			}
 			if (false && player_node->mAction != Being::ATTACK
 					&& player_node->withinAttackRange(player_node->getTarget()))
 			{
@@ -940,7 +935,6 @@ void Game::handleBot()
 		}
 		else
 		{
-			attackTimer = 0;
 			if (player_node->mAction != Being::ATTACK)
 			{
 				player_node->attack(player_node->getTarget(), true);
@@ -1021,7 +1015,9 @@ void Game::handleFollow()
 			player_node->setDestination(target->mX, target->mY);
 		if (target->mAction != Being::ATTACK)
 		{
-			if (target->mAction == Being::DEAD || player_node->mAction == Being::DEAD){
+			if (target->mAction == Being::DEAD || player_node->mAction
+					== Being::DEAD)
+			{
 				wasKilled = true;
 				return;
 			}
@@ -1032,18 +1028,23 @@ void Game::handleFollow()
 					&& player_node->mAction == Being::SIT))
 				player_node->toggleSit(false);
 		}
-		if (target->mAction == Being::ATTACK && player_node->mAction
-				!= Being::ATTACK)
+		if (target->mAction == Being::ATTACK)
 		{
-			if (player_node->getDirection() != target->getDirection())
+			/*
+			 if (player_node->getDirection() != target->getDirection())
+			 {
+			 Net::getPlayerHandler()->setDirection(target->getDirection());
+			 player_node->setDirection(target->getDirection());
+			 }
+			 */
+			Being *attackTarget = beingManager->findIsolatedBeing(player_node,
+					player_node->getAttackRange() + 1, Being::MONSTER, "");
+			if (attackTarget && (!player_node->getTarget()
+					|| player_node->mAction != Being::ATTACK || attackTarget
+					!= player_node->getTarget()))
 			{
-				Net::getPlayerHandler()->setDirection(target->getDirection());
-				player_node->setDirection(target->getDirection());
-			}
-			Being *attackTarget = beingManager->findNearestLivingBeing(target,
-					player_node->getAttackRange() + 3, Being::MONSTER);
-			if (attackTarget)
 				player_node->attack(attackTarget, true);
+			}
 		}
 	}
 	else

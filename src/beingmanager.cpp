@@ -351,9 +351,9 @@ Being *BeingManager::findNearestLivingBeingNotName(Being *aroundBeing,
 Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 		Being::Type type, std::string name) const
 {
-	Being *closestBeing = NULL;
 	Being *dangerBeing = NULL;
-	int dist = 0;
+	unsigned int tweight = 0;
+	unsigned int weight = 0;
 	int x = aroundBeing->mX;
 	int y = aroundBeing->mY;
 
@@ -365,37 +365,44 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 				> player_node->right || being->mY < player_node->top
 				|| being->mY > player_node->bottom))
 			continue;
-		int d = abs(being->mX - x) + abs(being->mY - y);
+		int dx = abs(being->mX - x);
+		int dy = abs(being->mY - y);
+		int d = dx > dy ? dx : dy;
+		//int d = dx + dy;
+		if (d > maxdist)
+			continue;
 
-		if ((being->getType() == type || type == Being::UNKNOWN) && (d < dist
-				+ 5 || closestBeing == NULL) // it is closer
+		if ((being->getType() == type || type == Being::UNKNOWN)
 				&& being->mAction != Being::DEAD // no dead beings
 				&& being != aroundBeing && (name.empty() || being->getName()
 				== name) && being->getName().find("Spectre", 0)
 				== std::string::npos && ((x == being->mX && y == being->mY)
 				|| aroundBeing->destinationReachable(being->mX, being->mY)))
 		{
-			dist = d;
-			if (dangerBeing == NULL || getMonsterWeight(being->getName())
-					< getMonsterWeight(dangerBeing->getName()))
+			tweight = (d + 1) * getMonsterWeight(being->getName());
+			if (dangerBeing == NULL || tweight < weight)
+			{
+				weight = tweight;
 				dangerBeing = being;
-			closestBeing = being;
+			}
 		}
 	}
 
-	return (maxdist >= dist) ? dangerBeing : NULL;
+	return dangerBeing ? dangerBeing : NULL;
 }
 int BeingManager::getMonsterWeight(std::string name) const
 {
-	if (name.find("Fallen", 0) != std::string::npos)
-		return 0;
-	else if (name.find("Zombie", 0) != std::string::npos)
+	if (std::strcmp(name.data(), "Fallen") == 0)
 		return 2;
-	else if (name.find("Skeleton", 0) != std::string::npos)
-		return 4;
-	else if (name.find("Jack", 0) != std::string::npos)
-		return 6;
-	return 100;
+	else if (std::strcmp(name.data(), "Zombie") == 0)
+		return 8;
+	else if (std::strcmp(name.data(), "Skeleton") == 0)
+		return 32;
+	else if (std::strcmp(name.data(), "Jack") == 0)
+		return 128;
+	else if (std::strcmp(name.data(), "Lady Skeleton") == 0)
+		return 512;
+	return 10000;
 }
 bool BeingManager::hasBeing(Being *being) const
 {
