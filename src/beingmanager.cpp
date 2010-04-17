@@ -352,6 +352,7 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 		Being::Type type, std::string name) const
 {
 	Being *closestBeing = NULL;
+	Being *dangerBeing = NULL;
 	int dist = 0;
 	int x = aroundBeing->mX;
 	int y = aroundBeing->mY;
@@ -367,22 +368,35 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 		int d = abs(being->mX - x) + abs(being->mY - y);
 
 		if ((being->getType() == type || type == Being::UNKNOWN) && (d < dist
-				|| closestBeing == NULL) // it is closer
+				+ 5 || closestBeing == NULL) // it is closer
 				&& being->mAction != Being::DEAD // no dead beings
 				&& being != aroundBeing && (name.empty() || being->getName()
 				== name) && being->getName().find("Spectre", 0)
-				== std::string::npos && ((aroundBeing->mX == being->mX
-				&& aroundBeing->mY == being->mY)
+				== std::string::npos && ((x == being->mX && y == being->mY)
 				|| aroundBeing->destinationReachable(being->mX, being->mY)))
 		{
 			dist = d;
+			if (dangerBeing == NULL || getMonsterWeight(being->getName())
+					< getMonsterWeight(dangerBeing->getName()))
+				dangerBeing = being;
 			closestBeing = being;
 		}
 	}
 
-	return (maxdist >= dist) ? closestBeing : NULL;
+	return (maxdist >= dist) ? dangerBeing : NULL;
 }
-
+int BeingManager::getMonsterWeight(std::string name) const
+{
+	if (name.find("Fallen", 0) != std::string::npos)
+		return 0;
+	else if (name.find("Zombie", 0) != std::string::npos)
+		return 2;
+	else if (name.find("Skeleton", 0) != std::string::npos)
+		return 4;
+	else if (name.find("Jack", 0) != std::string::npos)
+		return 6;
+	return 100;
+}
 bool BeingManager::hasBeing(Being *being) const
 {
 	for (Beings::const_iterator i = mBeings.begin(), i_end = mBeings.end(); i

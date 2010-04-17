@@ -99,6 +99,7 @@ class BeingManager
 
         Being *findIsolatedBeing(Being *aroundBeing, int maxdist,
                                             Being::Type type, std::string name) const;
+        int getMonsterWeight(std::string name) const;
         /**
          * Returns the whole list of beings.
          */
