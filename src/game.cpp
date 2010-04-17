@@ -581,7 +581,7 @@ void Game::logic()
 					lastHealTimer = 1600;
 				}
 			}
-			if (isBotOn)
+			if (isBotOn && !bFollowPlayer)
 				handleBot();
 			else if (bFollowPlayer)
 				handleFollow();
