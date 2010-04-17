@@ -393,15 +393,15 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 int BeingManager::getMonsterWeight(std::string name) const
 {
 	if (std::strcmp(name.data(), "Fallen") == 0)
-		return 2;
+		return 10;
 	else if (std::strcmp(name.data(), "Zombie") == 0)
-		return 8;
+		return 30;
 	else if (std::strcmp(name.data(), "Skeleton") == 0)
-		return 32;
+		return 70;
 	else if (std::strcmp(name.data(), "Jack") == 0)
-		return 128;
+		return 150;
 	else if (std::strcmp(name.data(), "Lady Skeleton") == 0)
-		return 512;
+		return 310;
 	return 10000;
 }
 bool BeingManager::hasBeing(Being *being) const
