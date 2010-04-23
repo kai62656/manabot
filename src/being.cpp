@@ -150,14 +150,14 @@ void Being::setPosition(const Vector &pos)
 void Being::setDestination(Uint16 destX, Uint16 destY)
 {
     if (mMap)
-        setPath(mMap->findPath(mX, mY, destX, destY, getWalkMask(),9999));
+        setPath(mMap->findPath(mX, mY, destX, destY, getWalkMask(),100));
 }
 
 bool Being::destinationReachable(Uint16 destX, Uint16 destY)
 {
     if(mMap)
     {
-        if(mMap->findPath2(mX, mY, destX, destY, getWalkMask(),9999))
+        if(mMap->findPath2(mX, mY, destX, destY, getWalkMask(),100))
             return true;
     }
     return false;

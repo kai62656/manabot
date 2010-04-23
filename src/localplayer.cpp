@@ -132,6 +132,7 @@ LocalPlayer::LocalPlayer(int id, int job, Map *map):
     , mExpMessageTime(0)
 #endif
 {
+	isBotOn = false;
 	noskulls = false;
 	autoHeal = true;
 	square = false;

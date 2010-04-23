@@ -36,7 +36,6 @@ class Game: public ConfigListener
 {
 public:
 	bool wasKilled;
-	bool isBotOn;
 
 	Game();
 

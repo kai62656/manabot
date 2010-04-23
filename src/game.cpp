@@ -333,7 +333,6 @@ Game::Game() :
 {
 	// handleFollow()
 	wasKilled = false;
-	isBotOn = false;
 
 	done = false;
 
@@ -563,7 +562,8 @@ void Game::logic()
 			pickupTimer++;
 			if (bAutoPickup && pickupTimer > 10)
 			{
-				handlePickup(isBotOn ? player_node->botPickupRange : 1);
+				handlePickup(player_node->isBotOn ? player_node->botPickupRange
+						: 1);
 				pickupTimer = 0;
 			}
 
@@ -581,7 +581,7 @@ void Game::logic()
 					lastHealTimer = 1600;
 				}
 			}
-			if (isBotOn && !bFollowPlayer)
+			if (player_node->isBotOn && !bFollowPlayer)
 				handleBot();
 			else if (bFollowPlayer)
 				handleFollow();
@@ -712,7 +712,7 @@ void Game::HandleBotResponse(std::string message, std::string sender,
 	}
 	else if (message == "!stop" && sender == botMaster)
 	{
-		isBotOn = false;
+		player_node->isBotOn = false;
 		isBotStandby = false;
 		targetType = "";
 		mapName = "";
@@ -729,7 +729,7 @@ void Game::HandleBotResponse(std::string message, std::string sender,
 	{
 		message = message.substr(7);
 
-		isBotOn = true;
+		player_node->isBotOn = true;
 		isBotStandby = false;
 		targetType = message;
 		mapName = map_path;
@@ -741,7 +741,7 @@ void Game::HandleBotResponse(std::string message, std::string sender,
 	}
 	else if (message == "!follow" && sender == botMaster)
 	{
-		if (isBotOn)
+		if (player_node->isBotOn)
 		{
 			commandHandler->handleCommand("w " + botMaster
 					+ " Turn the bot off first.", localChatTab);
@@ -867,9 +867,9 @@ void Game::handleRandMove()
 
 void Game::handleBot()
 {
-	if (map_path != mapName || player_node->mAction == Being::DEAD)
+	if (map_path != mapName || (false && player_node->mAction == Being::DEAD))
 	{
-		isBotOn = false;
+		player_node->isBotOn = false;
 		return;
 	}
 
@@ -1313,11 +1313,11 @@ void Game::handleInput()
 				}
 					break;
 				case KeyboardConfig::KEY_BOT:
-					if (!isBotOn)
+					if (!player_node->isBotOn)
 					{
 						if (player_node->getTarget())
 						{
-							isBotOn = true;
+							player_node->isBotOn = true;
 							isBotStandby = false;
 							targetType = player_node->getTarget()->getName();
 							player_node->setTargetDelay(6000);
@@ -1332,7 +1332,7 @@ void Game::handleInput()
 					}
 					else
 					{
-						isBotOn = false;
+						player_node->isBotOn = false;
 						isBotStandby = false;
 						targetType = "";
 						mapName = "";

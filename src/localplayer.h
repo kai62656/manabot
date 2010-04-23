@@ -127,6 +127,8 @@ enum
 class LocalPlayer : public Player
 {
     public:
+		bool isBotOn;
+
 		bool noskulls;
 		bool autoHeal;
 		bool square;

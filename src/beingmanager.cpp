@@ -36,8 +36,6 @@
 
 #include <cassert>
 
-extern Game game;
-
 class FindBeingFunctor
 {
 public:
@@ -355,6 +353,7 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 		Being::Type type, std::string name) const
 {
 	Being *dangerBeing = NULL;
+	unsigned int mweight = 0;
 	unsigned int tweight = 0;
 	unsigned int weight = 0;
 	int x = aroundBeing->mX;
@@ -364,25 +363,25 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 			!= i_end; ++i)
 	{
 		Being *being = (*i);
-		if ( game.isBotOn && player_node->square && (being->mX < player_node->left || being->mX
-				> player_node->right || being->mY < player_node->top
-				|| being->mY > player_node->bottom))
+		if (player_node->isBotOn && player_node->square && (being->mX
+				< player_node->left || being->mX > player_node->right
+				|| being->mY < player_node->top || being->mY
+				> player_node->bottom))
 			continue;
 		int dx = abs(being->mX - x);
 		int dy = abs(being->mY - y);
 		int d = dx > dy ? dx : dy;
-		//int d = dx + dy;
 		if (d > maxdist)
 			continue;
-
-		if ((being->getType() == type || type == Being::UNKNOWN)
-				&& being->mAction != Being::DEAD // no dead beings
-				&& being != aroundBeing && (name.empty() || being->getName()
-				== name) && being->getName().find("Spectre", 0)
-				== std::string::npos && ((x == being->mX && y == being->mY)
+		mweight = getMonsterWeight(being->getName());
+		if (mweight != 0
+				&& (being->getType() == type || type == Being::UNKNOWN)
+				&& being->mAction != Being::DEAD && being != aroundBeing
+				&& (name.empty() || being->getName() == name) && ((x
+				== being->mX && y == being->mY)
 				|| aroundBeing->destinationReachable(being->mX, being->mY)))
 		{
-			tweight = (d + 1) * getMonsterWeight(being->getName());
+			tweight = (d + 1) * mweight;
 			if (dangerBeing == NULL || tweight < weight)
 			{
 				weight = tweight;
@@ -395,16 +394,32 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 }
 int BeingManager::getMonsterWeight(std::string name) const
 {
+	// Danger targets
 	if (std::strcmp(name.data(), "Fallen") == 0)
-		return 10;
+		return 2 * 2 + 1;
 	else if (std::strcmp(name.data(), "Zombie") == 0)
-		return 30;
+		return 4 * 2 + 1;
 	else if (std::strcmp(name.data(), "Skeleton") == 0)
-		return 70;
+		return 8 * 3 + 1;
 	else if (std::strcmp(name.data(), "Jack") == 0)
-		return 150;
+		return 16 * 4 + 1;
 	else if (std::strcmp(name.data(), "Lady Skeleton") == 0)
-		return 310;
+		return 32 * 4 + 1;
+
+	// Kill when no danger targets, can be avoided with /avoid (0 | 1)
+	else if (std::strcmp(name.data(), "Poison Skull") == 0)
+		return 101 * 4 + 1;
+	else if (std::strcmp(name.data(), "Fire Skull") == 0)
+		return 102 * 4 + 1;
+	else if (std::strcmp(name.data(), "Poltergeist") == 0)
+		return 200 * 4 + 1;
+	else if (std::strcmp(name.data(), "Wisp") == 0)
+		return 400 * 4 + 1;
+
+	// Avoid
+	else if (std::strcmp(name.data(), "Spectre") == 0)
+		return 0;
+
 	return 10000;
 }
 bool BeingManager::hasBeing(Being *being) const
