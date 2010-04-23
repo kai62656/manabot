@@ -395,29 +395,29 @@ Being *BeingManager::findIsolatedBeing(Being *aroundBeing, int maxdist,
 int BeingManager::getMonsterWeight(std::string name) const
 {
 	// Danger targets
-	if (std::strcmp(name.data(), "Fallen") == 0)
+	if (strcmp(name.data(), "Fallen") == 0)
 		return 2 * 2 + 1;
-	else if (std::strcmp(name.data(), "Zombie") == 0)
+	else if (strcmp(name.data(), "Zombie") == 0)
 		return 4 * 2 + 1;
-	else if (std::strcmp(name.data(), "Skeleton") == 0)
+	else if (strcmp(name.data(), "Skeleton") == 0)
 		return 8 * 3 + 1;
-	else if (std::strcmp(name.data(), "Jack") == 0)
+	else if (strcmp(name.data(), "Jack") == 0)
 		return 16 * 4 + 1;
-	else if (std::strcmp(name.data(), "Lady Skeleton") == 0)
+	else if (strcmp(name.data(), "Lady Skeleton") == 0)
 		return 32 * 4 + 1;
 
 	// Kill when no danger targets, can be avoided with /avoid (0 | 1)
-	else if (std::strcmp(name.data(), "Poison Skull") == 0)
+	else if (strcmp(name.data(), "Poison Skull") == 0)
 		return 101 * 4 + 1;
-	else if (std::strcmp(name.data(), "Fire Skull") == 0)
+	else if (strcmp(name.data(), "Fire Skull") == 0)
 		return 102 * 4 + 1;
-	else if (std::strcmp(name.data(), "Poltergeist") == 0)
+	else if (strcmp(name.data(), "Poltergeist") == 0)
 		return 200 * 4 + 1;
-	else if (std::strcmp(name.data(), "Wisp") == 0)
+	else if (strcmp(name.data(), "Wisp") == 0)
 		return 400 * 4 + 1;
 
 	// Avoid
-	else if (std::strcmp(name.data(), "Spectre") == 0)
+	else if (strcmp(name.data(), "Spectre") == 0)
 		return 0;
 
 	return 10000;
