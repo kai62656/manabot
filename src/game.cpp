@@ -867,7 +867,7 @@ void Game::handleRandMove()
 
 void Game::handleBot()
 {
-	if (map_path != mapName || (false && player_node->mAction == Being::DEAD))
+	if (map_path != mapName || (true && player_node->mAction == Being::DEAD))
 	{
 		player_node->isBotOn = false;
 		return;
